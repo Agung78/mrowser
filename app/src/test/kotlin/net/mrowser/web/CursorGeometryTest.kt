@@ -15,8 +15,19 @@ class CursorGeometryTest {
         assertEquals(CursorGeometry.Point(0f, 0f), CursorGeometry.clamp(-9f, -9f, 100, 100))
     }
 
-    @Test fun `clamp pulls an overflowing point to the edge`() {
-        assertEquals(CursorGeometry.Point(100f, 100f), CursorGeometry.clamp(999f, 999f, 100, 100))
+    @Test fun `clamp pulls an overflowing point onto the last pixel`() {
+        assertEquals(CursorGeometry.Point(99f, 99f), CursorGeometry.clamp(999f, 999f, 100, 100))
+    }
+
+    @Test fun `a cursor pinned at the bottom edge stays inside the view`() {
+        // y == height is one pixel past the last row: the page hit-tests nothing there (#31).
+        val p = CursorGeometry.step(CursorGeometry.Point(50f, 95f), 0, 1, 20f, 100, 100)
+        assertTrue(p.y < 100f)
+        assertTrue(CursorGeometry.isAtBottomEdge(p.y, 100, 10f))
+    }
+
+    @Test fun `clamp of an unsized view is the origin`() {
+        assertEquals(CursorGeometry.Point(0f, 0f), CursorGeometry.clamp(5f, 5f, 0, 0))
     }
 
     @Test fun `step moves by speed times direction and clamps`() {

@@ -191,6 +191,19 @@ class PlayerActivity : Activity() {
         subtitleController?.resume()
     }
 
+    // media3's PlayerView does not consume BACK, so the press that was meant to dismiss the
+    // controls would close the player. Hide them first; exit only when they are already hidden.
+    // The settings and subtitle dialogs take BACK themselves and never get here.
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        val view = playerView
+        if (view != null && view.isControllerFullyVisible) {
+            view.hideController()
+            return
+        }
+        super.onBackPressed()
+    }
+
     override fun onStop() {
         savePosition()
         super.onStop()

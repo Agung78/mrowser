@@ -24,6 +24,9 @@ object FavoritesBackup {
     private const val APP = "mrowser"
     private const val VERSION = 1
 
+    /** [skipped] counts entries dropped as malformed or not a web page, for the import message. */
+    data class Parsed(val favorites: List<Favorite>, val skipped: Int)
+
     data class Summary(val added: Int, val alreadyPresent: Int)
 
     fun toJson(items: List<Favorite>): String =
@@ -34,7 +37,7 @@ object FavoritesBackup {
             .toString(2)
 
     /** The favorites in [text], possibly none; null when it is not a favorites file at all. */
-    fun parse(text: String): List<Favorite>? {
+    fun parse(text: String): Parsed? {
         val root = try {
             JSONTokener(text).nextValue()
         } catch (e: JSONException) {
@@ -47,7 +50,8 @@ object FavoritesBackup {
                 else return null
             else -> return null
         }
-        return (0 until entries.length()).mapNotNull { entry(entries.opt(it)) }
+        val favorites = (0 until entries.length()).mapNotNull { entry(entries.opt(it)) }
+        return Parsed(favorites, skipped = entries.length() - favorites.size)
     }
 
     /** What [FavoritesOps.merge] of [imported] into [existing] adds, and what it skips. */

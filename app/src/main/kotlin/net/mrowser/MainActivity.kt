@@ -425,16 +425,23 @@ class MainActivity : Activity() {
         if (resultCode != RESULT_OK || uri == null) return
         // Malformed, empty or unreadable all leave the favorites exactly as they were.
         val text = FavoritesBackupFile.read(this, uri)
-        val imported = text?.let { FavoritesBackup.parse(it) }
+        val parsed = text?.let { FavoritesBackup.parse(it) }
         val message = when {
             text == null -> getString(R.string.import_favorites_unreadable)
-            imported == null -> getString(R.string.import_favorites_invalid)
-            imported.isEmpty() -> getString(R.string.import_favorites_empty)
+            parsed == null -> getString(R.string.import_favorites_invalid)
+            parsed.favorites.isEmpty() -> getString(R.string.import_favorites_empty)
             else -> {
-                val summary = FavoritesBackup.summarize(favorites.findAll(), imported)
-                favorites.addAll(imported)
+                val summary = FavoritesBackup.summarize(favorites.findAll(), parsed.favorites)
+                favorites.addAll(parsed.favorites)
                 homeView.refresh()
-                getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
+                if (parsed.skipped == 0) {
+                    getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
+                } else {
+                    getString(
+                        R.string.import_favorites_done_skipped,
+                        summary.added, summary.alreadyPresent, parsed.skipped
+                    )
+                }
             }
         }
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()

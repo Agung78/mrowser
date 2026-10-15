@@ -58,6 +58,7 @@
     <string name="export_favorites_failed">Couldn\'t save the file to Downloads.</string>
     <string name="export_favorites_denied">Storage permission is needed to save to Downloads.</string>
     <string name="import_favorites_done">Imported %1$d favorites (%2$d already present)</string>
+    <string name="import_favorites_done_skipped">Imported %1$d favorites (%2$d already present, %3$d skipped)</string>
     <string name="import_favorites_empty">No favorites found in that file.</string>
     <string name="import_favorites_invalid">That isn\'t an mrowser favorites file.</string>
     <string name="import_favorites_unreadable">Couldn\'t read that file.</string>

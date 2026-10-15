@@ -32,9 +32,15 @@ class ClippedOverlayScrollTest {
         }
     }
 
+    @Test fun `the hit test is floored onto the page`() {
+        // The last row at 2x is y = 539.5 of 540; elementFromPoint would round it off the page.
+        val js = ClippedOverlayScroll.script(480f, 1079f, 960, 1080, 24f)!!
+        assertTrue(js, js.contains("elementFromPoint(Math.floor(x),Math.floor(y))"))
+    }
+
     @Test fun `the walk ends at the fixed element`() {
         // Past it lie the page's own boxes: an app root clipped to 100vh must never move.
-        val js = ClippedOverlayScroll.script(480f, 1026f, 960, 1080, 24f)!!
+        val js = ClippedOverlayScroll.script(480f, 1079f, 960, 1080, 24f)!!
         assertTrue(js, js.contains("e&&e!==end&&"))
         assertTrue(js, js.contains("end=a.parentElement"))
     }

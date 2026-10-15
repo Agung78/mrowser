@@ -11,6 +11,10 @@ package net.mrowser.web
  * keyboard focus, which scrolls clipped boxes programmatically; this does the same
  * from the cursor.
  *
+ * The cursor is floored to whole CSS px before `elementFromPoint`, which rounds:
+ * pinned on the view's last row at 2x density it sits at y = 539.5 of 540, and
+ * rounding that up lands outside the page and hits nothing.
+ *
  * The script walks out from the element under the cursor the way scroll chaining
  * does. A user-scrollable box with room left is the wheel's job, so it stops there. A
  * clipped box with room left is scrolled by [cssDelta]. It only acts under a
@@ -28,7 +32,7 @@ object ClippedOverlayScroll {
         "var v=window.visualViewport;" +
         "var x=v?v.offsetLeft+fx*v.width:fx*window.innerWidth;" +
         "var y=v?v.offsetTop+fy*v.height:fy*window.innerHeight;" +
-        "var hit=document.elementFromPoint(x,y),a=hit;" +
+        "var hit=document.elementFromPoint(Math.floor(x),Math.floor(y)),a=hit;" +
         "while(a&&getComputedStyle(a).position!=='fixed')a=a.parentElement;" +
         "if(!a)return;" +
         "for(var e=hit,end=a.parentElement;" +

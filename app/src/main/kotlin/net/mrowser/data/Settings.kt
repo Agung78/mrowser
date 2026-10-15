@@ -15,6 +15,11 @@ data class Settings(
     val blockAds: Boolean = true,
     /** Registrable domains (`site.example`) on which the user has allowed ads. */
     val adsAllowedOn: Set<String> = emptySet(),
+    /** Switch the display's refresh rate to the video's frame rate (or a multiple) while
+     *  playing. Off by default: most TVs blank for a moment on every switch. */
+    val matchFrameRate: Boolean = false,
+    /** Switch the display's resolution to the video's while playing. Off by default, as above. */
+    val matchResolution: Boolean = false,
     /** Internal bookkeeping, not a user preference: default favorites written once. */
     val seeded: Boolean = false,
     /** Internal bookkeeping, not a user preference: hold-BACK hint shown once. */

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -30,6 +31,8 @@ import java.util.concurrent.Executors
 import net.mrowser.adblock.AdBlocker
 import net.mrowser.data.DefaultFavorites
 import net.mrowser.data.Favorite
+import net.mrowser.data.FavoritesBackup
+import net.mrowser.data.FavoritesBackupFile
 import net.mrowser.data.HistoryEntry
 import net.mrowser.data.JsonFavoritesStore
 import net.mrowser.data.JsonHistoryStore
@@ -248,6 +251,7 @@ class MainActivity : Activity() {
             }
         )
         settingsView.bind(settings) { adBlocker.list }
+        settingsView.bindFavorites(onExport = ::exportFavorites, onImport = ::importFavorites)
 
         layout.post { cursor.center(webView.width, webView.height) }
 
@@ -366,6 +370,63 @@ class MainActivity : Activity() {
         }
         pendingStoragePermission = onResult
         requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQ_STORAGE)
+    }
+
+    /** Issue #48: a fixed file in Downloads, no picker — see [FavoritesBackupFile]. */
+    private fun exportFavorites() {
+        ensureStoragePermission { granted ->
+            if (!granted) {
+                Toast.makeText(this, R.string.export_favorites_denied, Toast.LENGTH_LONG).show()
+                return@ensureStoragePermission
+            }
+            val items = favorites.findAll()
+            val path = FavoritesBackupFile.export(this, FavoritesBackup.toJson(items))
+            val message = if (path != null) {
+                getString(R.string.export_favorites_done, items.size, path)
+            } else {
+                getString(R.string.export_favorites_failed)
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** The system picker, opened in Downloads; the file comes back in [onActivityResult]. */
+    @Suppress("DEPRECATION")
+    private fun importFavorites() {
+        try {
+            startActivityForResult(FavoritesBackupFile.pickIntent(), REQ_IMPORT_FAVORITES)
+        } catch (e: ActivityNotFoundException) {
+            // Some TV boxes ship no DocumentsUI at all.
+            AlertDialog.Builder(this)
+                .setTitle(R.string.import_favorites_no_picker_title)
+                .setMessage(getString(R.string.import_favorites_no_picker, FavoritesBackup.FILE_NAME))
+                .setPositiveButton(R.string.close, null)
+                .show()
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_IMPORT_FAVORITES) return
+        val uri = data?.data
+        if (resultCode != RESULT_OK || uri == null) return
+        // Malformed, empty or unreadable all leave the favorites exactly as they were.
+        val text = FavoritesBackupFile.read(this, uri)
+        val imported = text?.let { FavoritesBackup.parse(it) }
+        val message = when {
+            text == null -> getString(R.string.import_favorites_unreadable)
+            imported == null -> getString(R.string.import_favorites_invalid)
+            imported.isEmpty() -> getString(R.string.import_favorites_empty)
+            else -> {
+                val summary = FavoritesBackup.summarize(favorites.findAll(), imported)
+                favorites.addAll(imported)
+                homeView.refresh()
+                getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
+            }
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     /** Obtainium is the one route that ends the update problem for good; the README says so too. */
@@ -588,6 +649,7 @@ class MainActivity : Activity() {
     companion object {
         private const val CHIP_TIMEOUT_MS = 30_000L
         private const val REQ_STORAGE = 101
+        private const val REQ_IMPORT_FAVORITES = 102
         private const val OBTAINIUM_ADD_URL = "obtainium://add/https://github.com/m-salehi-v/mrowser"
         private const val OBTAINIUM_URL = "https://github.com/ImranR98/Obtainium"
     }

@@ -30,6 +30,10 @@ class JsonFavoritesStore(private val file: File) : FavoritesRepository {
         items = FavoritesOps.move(items, url, delta); persist()
     }
 
+    override fun addAll(imported: List<Favorite>) {
+        items = FavoritesOps.merge(items, imported); persist()
+    }
+
     /** Serialize the (immutable) snapshot on the caller, then write off the UI thread.
      *  The single-thread executor preserves write order; failures are logged, not swallowed. */
     private fun persist() {

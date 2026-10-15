@@ -14,7 +14,7 @@ import net.mrowser.data.Settings
 import net.mrowser.data.SettingsRepository
 
 /** Settings overlay: auto-open, display-mode matching, pop-up blocker, ad blocker, cursor speed,
- *  block-list info. */
+ *  block-list info, favorites export/import. */
 class SettingsView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
@@ -37,6 +37,10 @@ class SettingsView @JvmOverloads constructor(
 
     private var repository: SettingsRepository? = null
     private var blockList: () -> BlockList = { BlockList.EMPTY }
+
+    // The file work needs the Activity (permissions, the picker's result), so it lives there.
+    private var onExportFavorites: () -> Unit = {}
+    private var onImportFavorites: () -> Unit = {}
 
     init {
         LayoutInflater.from(context).inflate(R.layout.settings_view, this, true)
@@ -62,12 +66,19 @@ class SettingsView @JvmOverloads constructor(
         adsRow.setOnClickListener { toggleBlockAds() }
         cursorRow.setOnClickListener { pickCursor() }
         listsRow.setOnClickListener { showLists() }
+        findViewById<View>(R.id.settingsExportRow).setOnClickListener { onExportFavorites() }
+        findViewById<View>(R.id.settingsImportRow).setOnClickListener { onImportFavorites() }
     }
 
     /** [blockList] is a provider because the list loads on a background thread after launch. */
     fun bind(repository: SettingsRepository, blockList: () -> BlockList) {
         this.repository = repository
         this.blockList = blockList
+    }
+
+    fun bindFavorites(onExport: () -> Unit, onImport: () -> Unit) {
+        onExportFavorites = onExport
+        onImportFavorites = onImport
     }
 
     fun show() {

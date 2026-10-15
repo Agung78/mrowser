@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import net.mrowser.adblock.AdBlocker
 import net.mrowser.data.DefaultFavorites
+import net.mrowser.data.DocumentPicker
 import net.mrowser.data.Favorite
 import net.mrowser.data.FavoritesBackup
 import net.mrowser.data.FavoritesBackupFile
@@ -393,16 +394,26 @@ class MainActivity : Activity() {
     /** The system picker, opened in Downloads; the file comes back in [onActivityResult]. */
     @Suppress("DEPRECATION")
     private fun importFavorites() {
-        try {
-            startActivityForResult(FavoritesBackupFile.pickIntent(), REQ_IMPORT_FAVORITES)
-        } catch (e: ActivityNotFoundException) {
-            // Some TV boxes ship no DocumentsUI at all.
-            AlertDialog.Builder(this)
-                .setTitle(R.string.import_favorites_no_picker_title)
-                .setMessage(getString(R.string.import_favorites_no_picker, FavoritesBackup.FILE_NAME))
-                .setPositiveButton(R.string.close, null)
-                .show()
+        val intent = FavoritesBackupFile.pickIntent()
+        // Some TV boxes ship no DocumentsUI at all, and Android TV ones resolve the intent to a
+        // framework stub instead — see DocumentPicker.
+        if (!DocumentPicker.isUsable(intent.resolveActivity(packageManager)?.packageName)) {
+            showNoPicker()
+            return
         }
+        try {
+            startActivityForResult(intent, REQ_IMPORT_FAVORITES)
+        } catch (e: ActivityNotFoundException) {
+            showNoPicker()
+        }
+    }
+
+    private fun showNoPicker() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.import_favorites_no_picker_title)
+            .setMessage(getString(R.string.import_favorites_no_picker, FavoritesBackup.FILE_NAME))
+            .setPositiveButton(R.string.close, null)
+            .show()
     }
 
     @Deprecated("Deprecated in Java")

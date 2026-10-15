@@ -5,4 +5,5 @@ interface FavoritesRepository {
     fun add(favorite: Favorite)
     fun remove(url: String)
     fun update(oldUrl: String, favorite: Favorite)
+    fun move(url: String, delta: Int)
 }

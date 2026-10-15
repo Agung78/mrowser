@@ -251,6 +251,23 @@ class DisplayModeMatcherTest {
         assertNull(DisplayModeMatcher.pick(listOf(only), only, 24f, 1280, 720, true, true))
     }
 
+    @Test fun `a single 4K mode at a noisy 60 Hz leaves the display alone`() {
+        // What the test TV reports: one mode, 3840x2160 at 60.000004 Hz.
+        val only = uhd(1, 60.000004f)
+        for (fps in listOf(24f, r23, 25f, 30f, 60f, null)) {
+            assertNull(DisplayModeMatcher.pick(listOf(only), only, fps, 1280, 720, true, true))
+            assertNull(DisplayModeMatcher.pick(listOf(only), only, fps, 3840, 2160, true, true))
+        }
+    }
+
+    @Test fun `float noise on the panel side still counts as a multiple`() {
+        val modes = listOf(fhd(1, 50f), fhd(2, 60.000004f), fhd(3, 119.99999f))
+        assertEquals(2, pickRate(modes, modes[0], 30f))
+        assertEquals(2, pickRate(modes, modes[0], 60f))
+        assertEquals(3, pickRate(modes, modes[0], 24f))
+        assertEquals(3, pickRate(modes, modes[0], 120f))
+    }
+
     // --- target: what an adaptive stream asks for ---
 
     @Test fun `target is the largest rendition`() {

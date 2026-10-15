@@ -82,7 +82,7 @@ class SniffingWebViewClient(
         val req = request ?: return null
         val url = req.url?.toString() ?: return null
         if (req.isForMainFrame) adBlocker.onMainFrameRequest(url)
-        sniffer.onRequest(url)
+        sniffer.onRequest(url, req.requestHeaders.orEmpty())
         return adBlocker.intercept(req)
     }
 }

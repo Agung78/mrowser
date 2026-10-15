@@ -227,7 +227,7 @@ class MainActivity : Activity() {
             repository = favorites,
             onOpen = { openUrl(it.url) },
             onSubmitUrl = { openUrl(it) },
-            onEdit = { fav -> FavoriteDialog.show(this, favorites, fav) { homeView.refresh() } },
+            onEdit = { fav -> FavoriteDialog.show(this, favorites, fav) { url -> homeView.refresh(url) } },
             onHistory = { showHistory(fromHome = true) },
             onSettings = { showSettings() },
             onUpdate = { release ->

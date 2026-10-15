@@ -423,26 +423,41 @@ class MainActivity : Activity() {
         if (requestCode != REQ_IMPORT_FAVORITES) return
         val uri = data?.data
         if (resultCode != RESULT_OK || uri == null) return
-        // Malformed, empty or unreadable all leave the favorites exactly as they were.
-        val text = FavoritesBackupFile.read(this, uri)
+        importFrom(uri)
+    }
+
+    /**
+     * Read [uri] off the main thread — promptly, while the picker's grant is live — then merge.
+     * Malformed, empty or unreadable all leave the favorites exactly as they were.
+     */
+    private fun importFrom(uri: Uri) {
+        Thread {
+            val text = FavoritesBackupFile.read(this, uri)
+            runOnUiThread { if (!isDestroyed) onImportRead(text) }
+        }.start()
+    }
+
+    private fun onImportRead(text: String?) {
         val parsed = text?.let { FavoritesBackup.parse(it) }
-        val message = when {
-            text == null -> getString(R.string.import_favorites_unreadable)
-            parsed == null -> getString(R.string.import_favorites_invalid)
-            parsed.favorites.isEmpty() -> getString(R.string.import_favorites_empty)
-            else -> {
-                val summary = FavoritesBackup.summarize(favorites.findAll(), parsed.favorites)
-                favorites.addAll(parsed.favorites)
-                homeView.refresh()
-                if (parsed.skipped == 0) {
-                    getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
-                } else {
-                    getString(
-                        R.string.import_favorites_done_skipped,
-                        summary.added, summary.alreadyPresent, parsed.skipped
-                    )
-                }
+        if (parsed == null || parsed.favorites.isEmpty()) {
+            val problem = when {
+                text == null -> R.string.import_favorites_unreadable
+                parsed == null -> R.string.import_favorites_invalid
+                else -> R.string.import_favorites_empty
             }
+            Toast.makeText(this, problem, Toast.LENGTH_LONG).show()
+            return
+        }
+        val summary = FavoritesBackup.summarize(favorites.findAll(), parsed.favorites)
+        favorites.addAll(parsed.favorites)
+        homeView.refresh()
+        val message = if (parsed.skipped == 0) {
+            getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
+        } else {
+            getString(
+                R.string.import_favorites_done_skipped,
+                summary.added, summary.alreadyPresent, parsed.skipped
+            )
         }
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }

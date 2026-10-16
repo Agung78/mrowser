@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A row's main text: primary at rest, white on the focused row. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/on_surface" />
+    <item android:color="@color/text_primary" />
+</selector>

@@ -18,27 +18,29 @@ import net.mrowser.data.FavoritesRepository
 object FavoriteDialog {
 
     fun show(context: Context, repository: FavoritesRepository, fav: Favorite, onChanged: (String?) -> Unit) {
-        val titleField = EditText(context).apply {
-            setText(fav.title); hint = context.getString(R.string.title_hint)
+        val builder = AlertDialog.Builder(context)
+        // The dialog theme's context, so the fields and the move pills pick up its styles.
+        val ctx = builder.context
+        val density = ctx.resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+        val titleField = EditText(ctx).apply {
+            setText(fav.title); hint = ctx.getString(R.string.title_hint)
         }
-        val urlField = EditText(context).apply {
-            setText(fav.url); hint = context.getString(R.string.url_hint)
+        val urlField = EditText(ctx).apply {
+            setText(fav.url); hint = ctx.getString(R.string.url_hint)
         }
-        // The theme's stock button marks focus with a faint grey lift that is unreadable from
-        // the couch; the app's accent focus ring is what every other D-pad target uses.
-        fun moveButton(text: Int) = Button(context).apply {
+        // Built by hand, so given the dialog buttons' pill style explicitly.
+        fun moveButton(text: Int) = Button(ctx, null, 0, R.style.Widget_Mrowser_DialogButton).apply {
             setText(text)
-            setBackgroundResource(R.drawable.focus_ring)
-            stateListAnimator = null
         }
         val moveLeft = moveButton(R.string.move_left)
         val moveRight = moveButton(R.string.move_right)
-        val gap = (4 * context.resources.displayMetrics.density).toInt()
-        val moveRow = LinearLayout(context).apply {
+        val moveRow = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
-            listOf(moveLeft, moveRight).forEach { button ->
+            clipChildren = false // a focused pill scales up past the row's edge
+            listOf(moveLeft, moveRight).forEachIndexed { i, button ->
                 addView(button, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    setMargins(gap, gap, gap, gap)
+                    if (i > 0) marginStart = dp(8)
                 })
             }
         }
@@ -52,7 +54,7 @@ object FavoriteDialog {
             val rightHadFocus = moveRight.isFocused
             moveLeft.isEnabled = FavoritesOps.canMove(items, fav.url, -1)
             moveRight.isEnabled = FavoritesOps.canMove(items, fav.url, 1)
-            // focus_ring has no disabled state, so dim an end-of-list button by hand.
+            // The pill has no disabled state, so dim an end-of-list button by hand.
             listOf(moveLeft, moveRight).forEach { it.alpha = if (it.isEnabled) 1f else DISABLED_ALPHA }
             // A button disabled under the D-pad would strand focus; hand it to its twin.
             if (leftHadFocus && !moveLeft.isEnabled) moveRight.requestFocus()
@@ -70,15 +72,21 @@ object FavoriteDialog {
         moveRight.setOnClickListener { move(1) }
         syncMoveButtons()
 
-        val pad = (16 * context.resources.displayMetrics.density).toInt()
-        val container = LinearLayout(context).apply {
+        val container = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(pad, pad, pad, pad)
-            addView(titleField)
-            addView(urlField)
-            addView(moveRow)
+            // The dialog's 26dp content inset; the move pills' focus scale spills into it.
+            setPadding(dp(26), dp(12), dp(26), dp(4))
+            clipChildren = false
+            clipToPadding = false
+            fun spaced(bottom: Int) = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = dp(bottom) }
+            addView(titleField, spaced(10))
+            addView(urlField, spaced(10))
+            addView(moveRow, spaced(4))
         }
-        AlertDialog.Builder(context)
+        // Delete is the neutral button so it sits alone at the far left, away from Save.
+        builder
             .setTitle(R.string.edit_favorite)
             .setView(container)
             .setPositiveButton(R.string.save) { _, _ ->
@@ -86,12 +94,13 @@ object FavoriteDialog {
                 repository.update(fav.url, edited)
                 onChanged(edited.url)
             }
-            .setNegativeButton(R.string.delete) { _, _ ->
+            .setNeutralButton(R.string.delete) { _, _ ->
                 repository.remove(fav.url)
                 onChanged(null)
             }
-            .setNeutralButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
+            .also { DestructiveButton.apply(it, AlertDialog.BUTTON_NEUTRAL) }
     }
 
     private const val DISABLED_ALPHA = 0.35f

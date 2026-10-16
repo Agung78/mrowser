@@ -1,0 +1,110 @@
+<resources>
+    <!-- Capsule address bar: a 44dp round icon button, white disc + dark glyph when focused. -->
+    <style name="Widget.Mrowser.BarIcon" parent="">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:background">@drawable/bar_icon_bg</item>
+        <item name="android:tint">@color/bar_icon_tint</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:stateListAnimator">@animator/bar_focus_scale</item>
+    </style>
+
+    <!-- 1×24dp rule between the bar's groups; its margins add to the 4dp item gap. -->
+    <style name="Widget.Mrowser.BarSeparator" parent="">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:layout_marginEnd">6dp</item>
+        <item name="android:background">@color/bar_separator</item>
+    </style>
+
+    <!-- A pill button (home's History, history's Clear all): the control fill, white with dark
+         text and a 1.06 scale when focused. Sentence case, line icon at the start. -->
+    <style name="Widget.Mrowser.Pill" parent="@android:style/Widget.Material.Button.Borderless">
+        <item name="android:background">@drawable/pill_bg</item>
+        <item name="android:textColor">@color/pill_content</item>
+        <item name="android:drawableTint">@color/pill_content</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:stateListAnimator">@animator/pill_focus_scale</item>
+    </style>
+
+    <!-- A destructive pill: red text at rest, an accent fill with white text when focused. -->
+    <style name="Widget.Mrowser.Pill.Danger">
+        <item name="android:background">@drawable/pill_danger_bg</item>
+        <item name="android:textColor">@color/pill_danger_content</item>
+        <item name="android:drawableTint">@color/pill_danger_content</item>
+    </style>
+
+    <!-- A settings section label: small, spaced capitals, not focusable. -->
+    <style name="Mrowser.SettingsSection" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:textColor">@color/text_dim</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <!-- A settings row: the one focus and click target for its setting. -->
+    <style name="Widget.Mrowser.SettingsRow" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@drawable/row_bg</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="Mrowser.SettingsLabel" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/row_primary_text</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <!-- A picker row's value: grey text with a chevron after it. -->
+    <style name="Mrowser.SettingsValue" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/value_text</item>
+        <item name="android:drawableEnd">@drawable/ic_chevron</item>
+        <item name="android:drawableTint">@color/value_text</item>
+        <item name="android:drawablePadding">6dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <!-- A toggle row's switch: a plain View that copies its row's state; SettingsView activates
+         the row for "on" (see switch_bg). -->
+    <style name="Widget.Mrowser.SettingsSwitch" parent="">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:background">@drawable/switch_bg</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+</resources>

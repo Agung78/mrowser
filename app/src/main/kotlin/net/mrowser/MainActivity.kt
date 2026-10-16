@@ -13,6 +13,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -23,6 +28,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import java.io.File
@@ -39,6 +45,7 @@ import net.mrowser.data.JsonFavoritesStore
 import net.mrowser.data.JsonHistoryStore
 import net.mrowser.data.JsonSettingsStore
 import net.mrowser.handoff.HandoffController
+import net.mrowser.home.DestructiveButton
 import net.mrowser.home.FavoriteDialog
 import net.mrowser.home.HistoryView
 import net.mrowser.home.HomeView
@@ -58,6 +65,7 @@ import net.mrowser.web.CursorLayout
 import net.mrowser.web.ExternalIntentLauncher
 import net.mrowser.web.IncomingUrl
 import net.mrowser.web.RegistrableDomain
+import net.mrowser.web.UrlDisplay
 import net.mrowser.web.UrlHost
 import net.mrowser.web.UrlNormalizer
 
@@ -72,7 +80,9 @@ class MainActivity : Activity() {
     private lateinit var adBlocker: AdBlocker
     private lateinit var playChip: TextView
     private lateinit var favoriteButton: ImageButton
-    private lateinit var adBlockButton: TextView
+    private lateinit var adBlockButton: View
+    private lateinit var adBlockIcon: ImageView
+    private lateinit var adBlockCount: TextView
     private lateinit var homeView: HomeView
     private lateinit var favorites: JsonFavoritesStore
     private lateinit var history: JsonHistoryStore
@@ -89,6 +99,10 @@ class MainActivity : Activity() {
     /** True when history was opened from the home overlay (BACK returns to home);
      *  false when opened from the chrome bar mid-browse (BACK returns to the page). */
     private var historyFromHome = false
+
+    /** True while [showPageUrl] itself is writing the field, so the edit watcher can tell
+     *  the page's URL apart from the user typing over it. */
+    private var showingPageUrl = false
 
     /** Set when a page is opened from home; clears the back-stack on its first load. */
     private var clearHistoryOnLoad = false
@@ -113,6 +127,8 @@ class MainActivity : Activity() {
         val reloadButton = findViewById<ImageButton>(R.id.reloadButton)
         favoriteButton = findViewById(R.id.favoriteButton)
         adBlockButton = findViewById(R.id.adBlockButton)
+        adBlockIcon = findViewById(R.id.adBlockIcon)
+        adBlockCount = findViewById(R.id.adBlockCount)
         val homeButton = findViewById<ImageButton>(R.id.homeButton)
         val historyButton = findViewById<ImageButton>(R.id.historyButton)
 
@@ -135,7 +151,7 @@ class MainActivity : Activity() {
             blockAds = { settings.get().blockAds },
             blockPopups = { settings.get().blockPopups },
             allowedSites = { settings.get().adsAllowedOn },
-            onCountChanged = { n -> adBlockButton.text = if (n == 0) "" else n.toString() }
+            onCountChanged = { n -> showBlockedCount(n) }
         )
         adBlocker.load { resources.openRawResource(R.raw.blocklist) }
         // Extracted to its own method (rather than inlined here) so ART on API 23 (minSdk) does
@@ -184,7 +200,7 @@ class MainActivity : Activity() {
         chromeClient = BrowserWebChromeClient(
             activity = this,
             container = layout,
-            onEnter = { bar.visibility = View.GONE; playChip.visibility = View.GONE; layout.invalidate() },
+            onEnter = { chrome.dismiss(); playChip.visibility = View.GONE; layout.invalidate() },
             onExit = { layout.invalidate() },
             onTitle = { url, title -> recordHistory(url, title) },
             onPopupBlocked = { Toast.makeText(this, R.string.popup_blocked, Toast.LENGTH_SHORT).show() },
@@ -265,10 +281,7 @@ class MainActivity : Activity() {
             chrome.onInteracted()
         }
         homeButton.setOnClickListener { showHome() }
-        historyButton.setOnClickListener {
-            showHistory(fromHome = false)
-            chrome.onInteracted()
-        }
+        historyButton.setOnClickListener { showHistory(fromHome = false) }
         favoriteButton.setOnClickListener {
             toggleCurrentFavorite()
             chrome.onInteracted()
@@ -277,6 +290,27 @@ class MainActivity : Activity() {
             toggleAdsForSite()
             chrome.onInteracted()
         }
+        // The field sits mid-bar now, so LEFT/RIGHT must leave it rather than walk the caret
+        // through the whole URL first. Typing happens in the IME, which takes the D-pad itself.
+        urlInput.setOnKeyListener { v, keyCode, event ->
+            val direction = when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT -> View.FOCUS_LEFT
+                KeyEvent.KEYCODE_DPAD_RIGHT -> View.FOCUS_RIGHT
+                else -> return@setOnKeyListener false
+            }
+            if (event.action == KeyEvent.ACTION_DOWN) v.focusSearch(direction)?.requestFocus()
+            true
+        }
+        // The first edit turns the page's URL into the user's own text: plain, and no lock.
+        urlInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable) {
+                if (showingPageUrl) return
+                s.getSpans(0, s.length, ForegroundColorSpan::class.java).forEach { s.removeSpan(it) }
+                urlInput.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
+            }
+        })
         urlInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 UrlNormalizer.normalize(urlInput.text.toString())?.let { openUrl(it) }
@@ -302,8 +336,12 @@ class MainActivity : Activity() {
 
     /** Show exactly one overlay at a time: a second VISIBLE overlay steals window-global
      *  D-pad focus (focus search can't move past it), so every transition hides all three
-     *  first, then the caller shows the one it wants (or none, for openUrl). */
+     *  first, then the caller shows the one it wants (or none, for openUrl). The address bar
+     *  goes too: left up under an overlay, its buttons sit in the same focus search — the
+     *  capsule's right-hand cluster is level with home's History and settings buttons, so
+     *  RIGHT from home's address field jumped behind the overlay and got pulled back. */
     private fun hideAllOverlays() {
+        chrome.dismiss()
         homeView.hide()
         historyView.hide()
         settingsView.hide()
@@ -488,9 +526,32 @@ class MainActivity : Activity() {
     }
 
     private fun updateUrlText(url: String) {
-        urlInput.setText(url)
+        showPageUrl(url)
         updateFavoriteIcon()
         updateShieldIcon()
+    }
+
+    /**
+     * The current page in the address pill: host white, the rest grey, and for https a lock
+     * in place of the scheme. What the field holds still submits to the same page — see
+     * [UrlDisplay]. Anything that is not an http(s) URL is shown as it is.
+     */
+    private fun showPageUrl(url: String) {
+        val parts = UrlDisplay.of(url)
+        val text = SpannableString(parts?.text ?: url)
+        if (parts != null) {
+            val dim = getColor(R.color.text_dim)
+            val hostStart = parts.lead.length
+            val hostEnd = hostStart + parts.host.length
+            if (hostStart > 0) text.setSpan(ForegroundColorSpan(dim), 0, hostStart, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            text.setSpan(ForegroundColorSpan(getColor(R.color.on_surface)), hostStart, hostEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (hostEnd < text.length) text.setSpan(ForegroundColorSpan(dim), hostEnd, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        showingPageUrl = true
+        urlInput.setText(text)
+        showingPageUrl = false
+        val lock = if (parts?.secure == true) R.drawable.ic_lock else 0
+        urlInput.setCompoundDrawablesRelativeWithIntrinsicBounds(lock, 0, 0, 0)
     }
 
     private fun showChip() {
@@ -516,11 +577,13 @@ class MainActivity : Activity() {
         homeView.refresh()
     }
 
-    /** Tint the star accent (red) when the current page is a favorite, white otherwise. */
+    /** A saved page gets the filled star in accent (on the focus disc too); otherwise the
+     *  outline star in the bar's usual light/dark-on-focus tint. */
     private fun updateFavoriteIcon() {
         val saved = webView.url?.let { isFavorite(it) } ?: false
-        val color = getColor(if (saved) R.color.accent else R.color.on_surface)
-        favoriteButton.imageTintList = ColorStateList.valueOf(color)
+        favoriteButton.setImageResource(if (saved) R.drawable.ic_star_filled else R.drawable.ic_star)
+        favoriteButton.imageTintList =
+            if (saved) ColorStateList.valueOf(getColor(R.color.accent)) else getColorStateList(R.color.bar_icon_tint)
     }
 
     /** Shield button: allow ads on the current site if blocked, block them if allowed. Reloads. */
@@ -539,12 +602,23 @@ class MainActivity : Activity() {
         webView.reload()
     }
 
-    /** Tint the shield accent (red) when ads are allowed on the current site, white otherwise. */
+    /** Tint the shield accent (red) when ads are allowed on the current site; otherwise the
+     *  bar's usual light/dark-on-focus tint. */
     private fun updateShieldIcon() {
         val allowed = adBlocker.isAllowlisted(webView.url?.let { UrlHost.of(it) })
-        val color = getColor(if (allowed) R.color.accent else R.color.on_surface)
-        adBlockButton.compoundDrawableTintList = ColorStateList.valueOf(color)
-        adBlockButton.setTextColor(color)
+        adBlockIcon.imageTintList =
+            if (allowed) ColorStateList.valueOf(getColor(R.color.accent)) else getColorStateList(R.color.bar_icon_tint)
+    }
+
+    /** The shield's badge: this page's blocked count, hidden at zero. */
+    private fun showBlockedCount(n: Int) {
+        adBlockCount.text = n.toString()
+        adBlockCount.visibility = if (n == 0) View.GONE else View.VISIBLE
+        adBlockButton.contentDescription = if (n == 0) {
+            getString(R.string.ad_block_button)
+        } else {
+            getString(R.string.ad_block_button_count, n)
+        }
     }
 
     override fun onPause() {
@@ -677,6 +751,7 @@ class MainActivity : Activity() {
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.exit) { _, _ -> finish() }
             .show()
+            .also { DestructiveButton.apply(it, AlertDialog.BUTTON_POSITIVE) }
     }
 
     companion object {

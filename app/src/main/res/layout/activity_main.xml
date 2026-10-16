@@ -14,113 +14,161 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <!-- The capsule address bar. Left to right is also the D-pad order; the edge
+             controls point their outward next-focus at themselves, so focus cannot leave the
+             bar for the WebView / cursor layer behind it. clipToPadding is off so a focused end
+             button's 1.08 scale can spill into the padding instead of being cut. -->
         <LinearLayout
             android:id="@+id/chromeBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:clipToPadding="false"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bar_background"
-            android:padding="10dp"
+            android:elevation="10dp"
             android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/backButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/focus_ring"
-                android:src="@android:drawable/ic_media_previous"
-                android:tint="@color/on_surface"
+                style="@style/Widget.Mrowser.BarIcon"
+                android:layout_marginStart="0dp"
+                android:nextFocusLeft="@id/backButton"
+                android:nextFocusUp="@id/backButton"
+                android:nextFocusDown="@id/backButton"
+                android:src="@drawable/ic_back"
                 android:contentDescription="@string/back" />
 
             <ImageButton
-                android:id="@+id/homeButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:background="@drawable/focus_ring"
-                android:src="@android:drawable/ic_menu_revert"
-                android:tint="@color/on_surface"
-                android:contentDescription="@string/home" />
-
-            <ImageButton
                 android:id="@+id/reloadButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:background="@drawable/focus_ring"
-                android:src="@android:drawable/ic_menu_rotate"
-                android:tint="@color/on_surface"
+                style="@style/Widget.Mrowser.BarIcon"
+                android:nextFocusUp="@id/reloadButton"
+                android:nextFocusDown="@id/reloadButton"
+                android:src="@drawable/ic_reload"
                 android:contentDescription="@string/reload" />
 
             <ImageButton
-                android:id="@+id/favoriteButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="10dp"
-                android:background="@drawable/focus_ring"
-                android:src="@android:drawable/ic_menu_add"
-                android:tint="@color/on_surface"
-                android:contentDescription="@string/add_favorite" />
+                android:id="@+id/homeButton"
+                style="@style/Widget.Mrowser.BarIcon"
+                android:nextFocusUp="@id/homeButton"
+                android:nextFocusDown="@id/homeButton"
+                android:src="@drawable/ic_home"
+                android:contentDescription="@string/home" />
 
-            <TextView
-                android:id="@+id/adBlockButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:minHeight="48dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:gravity="center_vertical"
-                android:background="@drawable/focus_ring"
-                android:focusable="true"
-                android:clickable="true"
-                android:drawableStart="@drawable/ic_shield"
-                android:drawablePadding="4dp"
-                android:drawableTint="@color/on_surface"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
-                android:contentDescription="@string/ad_block_button" />
-
-            <ImageButton
-                android:id="@+id/historyButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:background="@drawable/focus_ring"
-                android:src="@android:drawable/ic_menu_recent_history"
-                android:tint="@color/on_surface"
-                android:contentDescription="@string/history" />
+            <View style="@style/Widget.Mrowser.BarSeparator" />
 
             <EditText
                 android:id="@+id/urlInput"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_weight="1"
-                android:background="@drawable/focus_ring"
-                android:padding="8dp"
+                android:layout_marginStart="4dp"
+                android:nextFocusUp="@id/urlInput"
+                android:nextFocusDown="@id/urlInput"
+                android:background="@drawable/url_field_bg"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:gravity="center_vertical"
+                android:drawablePadding="8dp"
+                android:singleLine="true"
+                android:textSize="17sp"
                 android:hint="@string/url_hint"
                 android:imeOptions="actionGo"
                 android:inputType="textUri"
                 android:textColor="@color/on_surface"
                 android:textColorHint="@color/hint" />
+
+            <View style="@style/Widget.Mrowser.BarSeparator" />
+
+            <ImageButton
+                android:id="@+id/favoriteButton"
+                style="@style/Widget.Mrowser.BarIcon"
+                android:nextFocusUp="@id/favoriteButton"
+                android:nextFocusDown="@id/favoriteButton"
+                android:src="@drawable/ic_star"
+                android:contentDescription="@string/add_favorite" />
+
+            <!-- Shield + blocked-count badge. The children copy the frame's focused state, so
+                 the icon tint and the badge fill follow its focus. -->
+            <FrameLayout
+                android:id="@+id/adBlockButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:nextFocusUp="@id/adBlockButton"
+                android:nextFocusDown="@id/adBlockButton"
+                android:background="@drawable/bar_icon_bg"
+                android:stateListAnimator="@animator/bar_focus_scale"
+                android:focusable="true"
+                android:clickable="true"
+                android:contentDescription="@string/ad_block_button">
+
+                <ImageView
+                    android:id="@+id/adBlockIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:duplicateParentState="true"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_shield"
+                    android:tint="@color/bar_icon_tint" />
+
+                <TextView
+                    android:id="@+id/adBlockCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="2dp"
+                    android:minWidth="18dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:duplicateParentState="true"
+                    android:importantForAccessibility="no"
+                    android:background="@drawable/badge_bg"
+                    android:textColor="@color/on_surface"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <ImageButton
+                android:id="@+id/historyButton"
+                style="@style/Widget.Mrowser.BarIcon"
+                android:nextFocusRight="@id/historyButton"
+                android:nextFocusUp="@id/historyButton"
+                android:nextFocusDown="@id/historyButton"
+                android:src="@drawable/ic_history"
+                android:contentDescription="@string/history" />
         </LinearLayout>
 
+        <!-- A capsule with an accent play button; CursorLayout hit-tests its bounds for OK. -->
         <TextView
             android:id="@+id/playChip"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="36dp"
-            android:background="@drawable/play_chip_bg"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:background="@drawable/chip_bg"
+            android:elevation="10dp"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="22dp"
+            android:drawableStart="@drawable/ic_play_chip"
+            android:drawablePadding="12dp"
+            android:fontFamily="sans-serif-medium"
             android:text="@string/play_synced"
             android:textColor="@color/on_surface"
-            android:textSize="18sp"
+            android:textSize="17sp"
             android:visibility="gone" />
     </net.mrowser.web.CursorLayout>
 

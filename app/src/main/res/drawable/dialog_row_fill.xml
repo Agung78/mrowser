@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A focused dialog list row: the row-focus fill and soft white outline (never a white fill). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="14dp"
+    android:insetRight="14dp">
+    <shape android:shape="rectangle">
+        <corners android:radius="12dp" />
+        <solid android:color="@color/row_focused" />
+        <stroke android:width="2dp" android:color="@color/row_outline" />
+    </shape>
+</inset>

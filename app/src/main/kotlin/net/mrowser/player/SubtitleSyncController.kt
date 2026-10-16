@@ -67,6 +67,9 @@ class SubtitleSyncController(
     /** True when a track is selected (subtitles render), false when off — drives the CC button icon. */
     fun isShowing(): Boolean = selectedIndex >= 0
 
+    /** The selected track's index, or -1 when off — the picker's checked row. */
+    fun selected(): Int = selectedIndex
+
     /** index -1 = off; otherwise the track index. Fetches+parses on first use. */
     fun select(index: Int) {
         selectedIndex = index

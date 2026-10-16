@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The sub-sync box's "CC" badge: a rounded outline holding two C strokes. Tinted by its view
+     (accent while subtitles are on). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="14dp"
+    android:viewportWidth="20"
+    android:viewportHeight="14">
+    <path
+        android:pathData="M3.75,0.75H16.25A3,3 0,0 1,19.25 3.75V10.25A3,3 0,0 1,16.25 13.25H3.75A3,3 0,0 1,0.75 10.25V3.75A3,3 0,0 1,3.75 0.75Z"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="1.5" />
+    <path
+        android:pathData="M8.4,5.1A2.6,2.6 0,1 0,8.4 8.9M15.2,5.1A2.6,2.6 0,1 0,15.2 8.9"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round" />
+</vector>

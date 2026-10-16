@@ -3,14 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="32dp">
+    android:padding="32dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingBottom="24dp">
+        android:paddingBottom="24dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <TextView
             android:layout_width="wrap_content"
@@ -21,16 +25,23 @@
             android:textStyle="bold"
             android:paddingEnd="24dp" />
 
+        <!-- The address pill, history pill and settings circle share the capsule bar's shapes. -->
         <EditText
             android:id="@+id/homeUrlInput"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:background="@drawable/url_pill_bg"
+            android:background="@drawable/home_field_bg"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
+            android:gravity="center_vertical"
+            android:drawableStart="@drawable/ic_search"
+            android:drawableTint="@color/text_dim"
+            android:drawablePadding="10dp"
+            android:singleLine="true"
+            android:textSize="17sp"
             android:hint="@string/url_hint"
             android:imeOptions="actionGo"
             android:inputType="textUri"
@@ -39,24 +50,23 @@
 
         <Button
             android:id="@+id/homeHistoryButton"
+            style="@style/Widget.Mrowser.Pill"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:background="@drawable/focus_ring"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:text="@string/history"
-            android:textColor="@color/on_surface" />
+            android:drawableStart="@drawable/ic_history_20"
+            android:text="@string/history" />
 
         <ImageButton
             android:id="@+id/homeSettingsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
-            android:background="@drawable/focus_ring"
-            android:padding="10dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="center"
             android:src="@drawable/ic_settings"
-            android:tint="@color/on_surface"
+            android:tint="@color/pill_content"
+            android:stateListAnimator="@animator/bar_focus_scale"
             android:contentDescription="@string/settings" />
     </LinearLayout>
 
@@ -94,20 +104,27 @@
         </FrameLayout>
     </ScrollView>
 
-    <!-- Bottom-left, deliberately quiet: accent text on the same focus_ring the header buttons
-         use, not a filled chip. `gone` by default so the favorites grid keeps its full height. -->
+    <!-- Bottom-left, deliberately quiet: a small pill with an accent dot, white when focused.
+         `gone` by default so the favorites grid keeps its full height. -->
     <Button
         android:id="@+id/homeUpdateButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_gravity="start"
         android:layout_marginTop="16dp"
-        android:background="@drawable/focus_ring"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:background="@drawable/update_pill_bg"
+        android:stateListAnimator="@null"
+        android:minHeight="40dp"
+        android:minWidth="0dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="0dp"
+        android:drawableStart="@drawable/update_dot"
+        android:drawablePadding="8dp"
         android:text="@string/update_available"
         android:textAllCaps="false"
-        android:textColor="@color/on_surface"
+        android:textColor="@color/pill_content"
         android:textSize="14sp"
         android:visibility="gone" />
 </LinearLayout>

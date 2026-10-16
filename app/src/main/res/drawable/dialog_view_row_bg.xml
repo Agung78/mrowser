@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dialog row highlight as a view's own background (selectableItemBackground: media3's
+     TrackSelectionView rows). A view takes its background's padding as its own, so this one
+     carries the row's text padding too: 14dp of inset + 14dp inside the row, the same
+     as a ListView row under dialog_row_bg. Every state has the same padding. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <inset android:insetLeft="14dp" android:insetRight="14dp">
+            <shape android:shape="rectangle">
+                <corners android:radius="12dp" />
+                <solid android:color="@color/row_focused" />
+                <stroke android:width="2dp" android:color="@color/row_outline" />
+                <padding android:left="14dp" android:right="14dp" />
+            </shape>
+        </inset>
+    </item>
+    <item android:state_pressed="true">
+        <inset android:insetLeft="14dp" android:insetRight="14dp">
+            <shape android:shape="rectangle">
+                <corners android:radius="12dp" />
+                <solid android:color="@color/row_focused" />
+                <stroke android:width="2dp" android:color="@color/row_outline" />
+                <padding android:left="14dp" android:right="14dp" />
+            </shape>
+        </inset>
+    </item>
+    <item>
+        <inset android:insetLeft="14dp" android:insetRight="14dp">
+            <shape android:shape="rectangle">
+                <solid android:color="@color/transparent" />
+                <padding android:left="14dp" android:right="14dp" />
+            </shape>
+        </inset>
+    </item>
+</selector>

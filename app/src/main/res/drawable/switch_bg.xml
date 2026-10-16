@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A settings toggle's switch, drawn on a plain View (not a framework Switch, which would add
+     its own focus and click target): the row stays the one D-pad target, and the View copies
+     the row's state. Activated = on: an accent track with a white knob at the right; off: a
+     grey track, a pale knob at the left. The off track would vanish into the focused row's
+     fill, so on a focused row it is a step lighter. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="12dp" />
+                    <solid android:color="@color/accent" />
+                </shape>
+            </item>
+            <item android:width="18dp" android:height="18dp" android:gravity="end|center_vertical" android:end="3dp">
+                <shape android:shape="oval">
+                    <solid android:color="@color/focus_fill" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="12dp" />
+                    <solid android:color="@color/switch_track_off_focused" />
+                </shape>
+            </item>
+            <item android:width="18dp" android:height="18dp" android:gravity="start|center_vertical" android:start="3dp">
+                <shape android:shape="oval">
+                    <solid android:color="@color/switch_knob_off" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="12dp" />
+                    <solid android:color="@color/switch_track_off" />
+                </shape>
+            </item>
+            <item android:width="18dp" android:height="18dp" android:gravity="start|center_vertical" android:start="3dp">
+                <shape android:shape="oval">
+                    <solid android:color="@color/switch_knob_off" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

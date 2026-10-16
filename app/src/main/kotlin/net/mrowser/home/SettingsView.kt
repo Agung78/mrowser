@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
+import java.text.NumberFormat
 import net.mrowser.R
 import net.mrowser.adblock.BlockList
 import net.mrowser.data.CursorSpeed
@@ -27,11 +28,6 @@ class SettingsView @JvmOverloads constructor(
     private val adsRow: View
     private val cursorRow: View
     private val listsRow: View
-    private val autoOpenValue: TextView
-    private val frameRateValue: TextView
-    private val resolutionValue: TextView
-    private val popupValue: TextView
-    private val adsValue: TextView
     private val cursorValue: TextView
     private val listsValue: TextView
 
@@ -51,11 +47,6 @@ class SettingsView @JvmOverloads constructor(
         adsRow = findViewById(R.id.settingsAdsRow)
         cursorRow = findViewById(R.id.settingsCursorRow)
         listsRow = findViewById(R.id.settingsListsRow)
-        autoOpenValue = findViewById(R.id.settingsAutoOpenValue)
-        frameRateValue = findViewById(R.id.settingsFrameRateValue)
-        resolutionValue = findViewById(R.id.settingsResolutionValue)
-        popupValue = findViewById(R.id.settingsPopupValue)
-        adsValue = findViewById(R.id.settingsAdsValue)
         cursorValue = findViewById(R.id.settingsCursorValue)
         listsValue = findViewById(R.id.settingsListsValue)
 
@@ -100,13 +91,24 @@ class SettingsView @JvmOverloads constructor(
 
     private fun render() {
         val s = current()
-        autoOpenValue.setText(if (s.autoOpenPlayer) R.string.on else R.string.off)
-        frameRateValue.setText(if (s.matchFrameRate) R.string.on else R.string.off)
-        resolutionValue.setText(if (s.matchResolution) R.string.on else R.string.off)
-        popupValue.setText(if (s.blockPopups) R.string.on else R.string.off)
-        adsValue.setText(if (s.blockAds) R.string.on else R.string.off)
+        showToggle(autoOpenRow, R.string.auto_open_title, s.autoOpenPlayer)
+        showToggle(frameRateRow, R.string.match_frame_rate_title, s.matchFrameRate)
+        showToggle(resolutionRow, R.string.match_resolution_title, s.matchResolution)
+        showToggle(popupRow, R.string.block_popups_title, s.blockPopups)
+        showToggle(adsRow, R.string.block_ads_title, s.blockAds)
         cursorValue.setText(cursorLabelRes(s.cursorSpeed))
-        listsValue.text = blockList().size.toString()
+        listsValue.text = grouped(blockList().size)
+    }
+
+    /** The row is activated for "on"; its switch copies the row's state (activated, and focused
+     *  for the lighter off track), and the row, the only focus target, says "On"/"Off". */
+    private fun showToggle(row: View, title: Int, on: Boolean) {
+        row.isActivated = on
+        row.contentDescription = context.getString(
+            R.string.settings_toggle_state,
+            context.getString(title),
+            context.getString(if (on) R.string.on else R.string.off)
+        )
     }
 
     private fun toggleAutoOpen() {
@@ -142,14 +144,20 @@ class SettingsView @JvmOverloads constructor(
     private fun pickCursor() {
         val options = listOf(CursorSpeed.SLOW, CursorSpeed.NORMAL, CursorSpeed.FAST)
         val labels = options.map { context.getString(cursorLabelRes(it)) }.toTypedArray()
+        // Single-choice so the current speed carries the dialog's checked dot and the D-pad
+        // starts on it; a pick still closes the dialog at once.
         AlertDialog.Builder(context)
             .setTitle(R.string.cursor_speed_title)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, options.indexOf(current().cursorSpeed)) { dialog, which ->
                 repository?.update(current().copy(cursorSpeed = options[which]))
                 render()
+                dialog.dismiss()
             }
             .show()
     }
+
+    /** A domain count with the locale's grouping: "92,745", not "92745". */
+    private fun grouped(n: Int): String = NumberFormat.getIntegerInstance().format(n)
 
     /** Attribution for the bundled lists: name, entries, licence and URL per source. */
     private fun showLists() {
@@ -157,11 +165,11 @@ class SettingsView @JvmOverloads constructor(
         val body = buildString {
             for (s in list.info.sources) {
                 append(s.name).append('\n')
-                s.entries?.let { append("  ").append(it).append(" domains · ") } ?: append("  ")
+                s.entries?.let { append("  ").append(grouped(it)).append(" domains · ") } ?: append("  ")
                 append(s.licence).append('\n')
                 append("  ").append(s.url).append("\n\n")
             }
-            append(context.getString(R.string.ad_block_lists_generated, list.info.generated ?: "—", list.size))
+            append(context.getString(R.string.ad_block_lists_generated, list.info.generated ?: "—", grouped(list.size)))
         }
         AlertDialog.Builder(context)
             .setTitle(R.string.ad_block_lists_title)

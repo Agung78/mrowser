@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import android.util.AttributeSet
@@ -197,9 +198,12 @@ class HomeView @JvmOverloads constructor(
         v.tag = fav.url
         v.setOnClickListener { onOpen(fav) }
         v.setOnLongClickListener { onEdit(fav); true }
+        // card_bg draws the white ring; this adds the lift, the scale and a medium-weight title.
         v.setOnFocusChangeListener { card, hasFocus ->
-            val s = if (hasFocus) 1.1f else 1f
-            card.animate().scaleX(s).scaleY(s).setDuration(120).start()
+            val s = if (hasFocus) FOCUS_SCALE else 1f
+            val z = if (hasFocus) FOCUS_LIFT_DP * resources.displayMetrics.density else 0f
+            card.animate().scaleX(s).scaleY(s).translationZ(z).setDuration(120).start()
+            title.typeface = if (hasFocus) MEDIUM else Typeface.DEFAULT
         }
         return v
     }
@@ -211,6 +215,10 @@ class HomeView @JvmOverloads constructor(
     }
 
     private companion object {
+        const val FOCUS_SCALE = 1.08f
+        const val FOCUS_LIFT_DP = 8f
+        val MEDIUM: Typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+
         /** One pass through all six palettes: 20s per neighbouring pair. */
         const val CYCLE_MS = 120_000L
         const val FRAME_MS = 100L

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Every AlertDialog's card (Theme.Mrowser.Dialog). The inset is the window's margin around
+     the card, as in the framework's dialog_background_material. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="16dp">
+    <shape android:shape="rectangle">
+        <corners android:radius="20dp" />
+        <solid android:color="@color/dialog_card" />
+        <stroke android:width="1dp" android:color="@color/hairline" />
+    </shape>
+</inset>

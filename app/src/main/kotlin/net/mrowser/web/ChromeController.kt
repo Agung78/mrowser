@@ -1,6 +1,7 @@
 package net.mrowser.web
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 
 /**
@@ -33,15 +34,24 @@ class ChromeController(
 
     private fun animateIn() {
         bar.visibility = View.VISIBLE
-        bar.translationY = -bar.height.toFloat()
+        bar.translationY = -offscreenOffset()
         bar.alpha = 0f
         bar.animate().translationY(0f).alpha(1f).setDuration(180).start()
         urlInput.requestFocus()
     }
 
     private fun animateOut() {
-        bar.animate().translationY(-bar.height.toFloat()).alpha(0f).setDuration(160)
+        bar.animate().translationY(-offscreenOffset()).alpha(0f).setDuration(160)
             .withEndAction { bar.visibility = View.GONE }.start()
         webView.requestFocus()
+    }
+
+    /** The capsule floats below the top edge, so clearing the screen takes its height plus
+     *  that margin. A bar still GONE has never been measured: fall back to its fixed height. */
+    private fun offscreenOffset(): Float {
+        val lp = bar.layoutParams
+        val height = if (bar.height > 0) bar.height else lp.height.coerceAtLeast(0)
+        val top = (lp as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0
+        return (height + top).toFloat()
     }
 }

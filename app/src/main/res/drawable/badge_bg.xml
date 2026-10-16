@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The shield's blocked-count badge. Ringed in the capsule's own colour so it reads as cut out
+     of the icon; turns accent while the shield button is focused (the badge duplicates its
+     parent's state). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="9dp" />
+            <solid android:color="@color/accent" />
+            <stroke android:width="2dp" android:color="@color/capsule_solid" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="9dp" />
+            <solid android:color="@color/badge" />
+            <stroke android:width="2dp" android:color="@color/capsule_solid" />
+        </shape>
+    </item>
+</selector>

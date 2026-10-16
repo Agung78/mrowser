@@ -225,11 +225,13 @@ class PlayerActivity : Activity() {
     private fun showSubtitlePicker() {
         val c = subtitleController ?: return
         val labels = (listOf(getString(R.string.subtitle_off)) + c.trackLabels()).toTypedArray()
+        // Single-choice: the showing track (or Off) carries the checked dot and takes first focus.
         AlertDialog.Builder(this)
             .setTitle(R.string.track_subtitles)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, c.selected() + 1) { dialog, which ->
                 c.select(which - 1) // entry 0 = Off -> index -1
                 updateSubsButton()
+                dialog.dismiss()
             }
             .show()
     }
@@ -246,7 +248,10 @@ class PlayerActivity : Activity() {
         val labels = speeds.map { "${it}x" }.toTypedArray()
         AlertDialog.Builder(this)
             .setTitle(R.string.speed)
-            .setItems(labels) { _, w -> p.setPlaybackSpeed(speeds[w]) }
+            .setSingleChoiceItems(labels, speeds.indexOfFirst { it == p.playbackParameters.speed }) { dialog, w ->
+                p.setPlaybackSpeed(speeds[w])
+                dialog.dismiss()
+            }
             .show()
     }
 

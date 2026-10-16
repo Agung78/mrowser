@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog list row highlight: a rounded white row, inset from the card's edge. Used as the
+     list selector (AlertDialog setItems / setSingleChoiceItems) and as selectableItemBackground
+     (media3's TrackSelectionView rows). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:drawable="@drawable/dialog_row_fill" />
+    <item android:state_pressed="true" android:drawable="@drawable/dialog_row_fill" />
+    <item android:drawable="@color/transparent" />
+</selector>

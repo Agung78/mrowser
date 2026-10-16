@@ -142,11 +142,14 @@ class SettingsView @JvmOverloads constructor(
     private fun pickCursor() {
         val options = listOf(CursorSpeed.SLOW, CursorSpeed.NORMAL, CursorSpeed.FAST)
         val labels = options.map { context.getString(cursorLabelRes(it)) }.toTypedArray()
+        // Single-choice so the current speed carries the dialog's checked dot and the D-pad
+        // starts on it; a pick still closes the dialog at once.
         AlertDialog.Builder(context)
             .setTitle(R.string.cursor_speed_title)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, options.indexOf(current().cursorSpeed)) { dialog, which ->
                 repository?.update(current().copy(cursorSpeed = options[which]))
                 render()
+                dialog.dismiss()
             }
             .show()
     }

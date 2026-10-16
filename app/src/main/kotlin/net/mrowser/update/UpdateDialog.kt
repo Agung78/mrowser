@@ -28,7 +28,10 @@ object UpdateDialog {
         ensureStoragePermission: ((granted: Boolean) -> Unit) -> Unit,
         onObtainium: () -> Unit
     ) {
-        val body = TextView(activity).apply {
+        val builder = AlertDialog.Builder(activity)
+        // The dialog theme's context, so the notes read like any dialog message.
+        val ctx = builder.context
+        val body = TextView(ctx).apply {
             // Release notes are network-supplied text: plain into a TextView, never the WebView.
             text = activity.getString(
                 R.string.update_body,
@@ -37,16 +40,16 @@ object UpdateDialog {
             )
         }
         val pad = (16 * activity.resources.displayMetrics.density).toInt()
-        val container = LinearLayout(activity).apply {
+        val container = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, pad, pad, pad)
             // A ScrollView, not TextView.setMovementMethod(ScrollingMovementMethod()) — that
             // call makes the TextView itself focusable/clickable, which on a D-pad lets long
             // notes join the focus order ahead of the Download button.
-            addView(ScrollView(activity).apply { addView(body) })
+            addView(ScrollView(ctx).apply { addView(body) })
         }
 
-        val dialog = AlertDialog.Builder(activity)
+        val dialog = builder
             .setTitle(activity.getString(R.string.update_title, release.version))
             .setView(container)
             // Listener set in onShow instead of here, so tapping Download does not dismiss the

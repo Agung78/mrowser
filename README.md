@@ -273,6 +273,24 @@ Issues and feature requests are tracked on the GitHub [issue tracker](https://gi
 
 ---
 
+## Support the project
+
+mrowser is free and built in spare time. If it is useful to you, these all help:
+
+- **Star the repository** — it is how other people find it.
+- **Report what breaks** — a site whose stream isn't detected, or a TV box where something misbehaves, is worth an [issue](https://github.com/m-salehi-v/mrowser/issues).
+- **Donate in crypto:**
+
+| Coin | Network | Address |
+| --- | --- | --- |
+| USDT | TRON (TRC-20) | `TU3mJBpHnsjttf4L2B7fQV9cNKfR7Tx9RQ` |
+| USDT / ETH / BNB | BNB Smart Chain (BEP-20) or Ethereum (ERC-20) | `0xbAAF33501f9121341686eeb8BE248fe82d380d04` |
+| BTC | Bitcoin | `bc1qa782jwxfwg9h9k3t0lskwmd3hsf5cq6mzsa24m` |
+
+Send each coin **only on the network listed next to it** — a transfer on a different network is lost.
+
+---
+
 ## Scope of use & disclaimer
 
 mrowser is a **general-purpose web browser**. It hosts, bundles, indexes, and links to **no content** — it ships with no preset sites and no default bookmarks; every site you visit is one you type in yourself.
@@ -294,3 +312,15 @@ Released under the **MIT License** — see [LICENSE](LICENSE). Bundled block lis
 mrowser was built with substantial help from **Anthropic's Claude** (via **Claude Code**). Architecture, planning docs in `docs/superpowers/`, much of the Kotlin implementation, and this README were produced in collaboration with Claude, with human direction and review. We're noting this honestly because the project's design and code genuinely reflect that collaboration.
 
 Built on the AndroidX **Media3 / ExoPlayer** library for HLS, DASH and progressive playback.
+
+---
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=m-salehi-v%2Fmrowser&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=m-salehi-v/mrowser&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=m-salehi-v/mrowser&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=m-salehi-v/mrowser&type=date&legend=top-left" />
+  </picture>
+</a>

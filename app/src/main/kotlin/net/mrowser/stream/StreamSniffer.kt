@@ -37,10 +37,11 @@ class StreamSniffer(
         onCleared()
     }
 
-    fun onRequest(url: String) {
+    /** @param headers what the WebView reported sending for this request (Referer, Origin, …). */
+    fun onRequest(url: String, headers: Map<String, String> = emptyMap()) {
         val kind = MediaUrlClassifier.classify(url)
         if (kind !in COLLECTED) return
-        candidates.add(StreamCandidate(url, kind, seq.incrementAndGet()))
+        candidates.add(StreamCandidate(url, kind, seq.incrementAndGet(), headers))
         when (kind) {
             MediaUrlClassifier.MediaKind.MANIFEST_HLS,
             MediaUrlClassifier.MediaKind.MANIFEST_DASH -> announce()
@@ -63,11 +64,9 @@ class StreamSniffer(
 
     fun bestRequest(): PlaybackRequest? {
         val best = StreamCandidateSelector.selectBest(candidates) ?: return null
-        val headers = buildMap {
-            put("User-Agent", userAgent())
-            if (pageUrl.isNotEmpty()) put("Referer", pageUrl)
-            CookieManager.getInstance().getCookie(best.url)?.let { put("Cookie", it) }
-        }
+        val cookie = CookieManager.getInstance().getCookie(best.url)
+        val headers = PlaybackHeaders.build(best.url, pageUrl, userAgent(), best.headers)
+            .let { if (cookie != null) it + ("Cookie" to cookie) else it }
         val subtitles = SubtitlePlan.build(StreamCandidateSelector.selectSubtitles(candidates))
         return PlaybackRequest(best.url, headers, subtitles, pageUrl)
     }

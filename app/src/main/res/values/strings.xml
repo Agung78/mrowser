@@ -39,6 +39,10 @@
     <string name="match_frame_rate_title">Match frame rate</string>
     <string name="match_resolution_title">Match resolution</string>
     <string name="cursor_speed_title">Cursor speed</string>
+    <string name="settings_section_playback">Playback</string>
+    <string name="settings_section_browsing">Browsing</string>
+    <string name="settings_section_favorites">Favorites</string>
+    <string name="settings_toggle_state">%1$s, %2$s</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="cursor_slow">Slow</string>
@@ -51,9 +55,7 @@
     <string name="block_ads_title">Block ads</string>
     <string name="ad_block_lists_title">Ad block lists</string>
     <string name="export_favorites_title">Export favorites</string>
-    <string name="export_favorites_value">To Downloads</string>
     <string name="import_favorites_title">Import favorites</string>
-    <string name="import_favorites_value">From Downloads</string>
     <string name="export_favorites_done">Saved %1$d favorites to %2$s</string>
     <string name="export_favorites_failed">Couldn\'t save the file to Downloads.</string>
     <string name="export_favorites_denied">Storage permission is needed to save to Downloads.</string>

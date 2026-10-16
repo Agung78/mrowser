@@ -27,11 +27,6 @@ class SettingsView @JvmOverloads constructor(
     private val adsRow: View
     private val cursorRow: View
     private val listsRow: View
-    private val autoOpenValue: TextView
-    private val frameRateValue: TextView
-    private val resolutionValue: TextView
-    private val popupValue: TextView
-    private val adsValue: TextView
     private val cursorValue: TextView
     private val listsValue: TextView
 
@@ -51,11 +46,6 @@ class SettingsView @JvmOverloads constructor(
         adsRow = findViewById(R.id.settingsAdsRow)
         cursorRow = findViewById(R.id.settingsCursorRow)
         listsRow = findViewById(R.id.settingsListsRow)
-        autoOpenValue = findViewById(R.id.settingsAutoOpenValue)
-        frameRateValue = findViewById(R.id.settingsFrameRateValue)
-        resolutionValue = findViewById(R.id.settingsResolutionValue)
-        popupValue = findViewById(R.id.settingsPopupValue)
-        adsValue = findViewById(R.id.settingsAdsValue)
         cursorValue = findViewById(R.id.settingsCursorValue)
         listsValue = findViewById(R.id.settingsListsValue)
 
@@ -100,13 +90,24 @@ class SettingsView @JvmOverloads constructor(
 
     private fun render() {
         val s = current()
-        autoOpenValue.setText(if (s.autoOpenPlayer) R.string.on else R.string.off)
-        frameRateValue.setText(if (s.matchFrameRate) R.string.on else R.string.off)
-        resolutionValue.setText(if (s.matchResolution) R.string.on else R.string.off)
-        popupValue.setText(if (s.blockPopups) R.string.on else R.string.off)
-        adsValue.setText(if (s.blockAds) R.string.on else R.string.off)
+        showToggle(autoOpenRow, R.string.auto_open_title, s.autoOpenPlayer)
+        showToggle(frameRateRow, R.string.match_frame_rate_title, s.matchFrameRate)
+        showToggle(resolutionRow, R.string.match_resolution_title, s.matchResolution)
+        showToggle(popupRow, R.string.block_popups_title, s.blockPopups)
+        showToggle(adsRow, R.string.block_ads_title, s.blockAds)
         cursorValue.setText(cursorLabelRes(s.cursorSpeed))
         listsValue.text = blockList().size.toString()
+    }
+
+    /** The row is activated for "on"; its switch copies the row's state (activated, and focused
+     *  for the lighter off track), and the row, the only focus target, says "On"/"Off". */
+    private fun showToggle(row: View, title: Int, on: Boolean) {
+        row.isActivated = on
+        row.contentDescription = context.getString(
+            R.string.settings_toggle_state,
+            context.getString(title),
+            context.getString(if (on) R.string.on else R.string.off)
+        )
     }
 
     private fun toggleAutoOpen() {

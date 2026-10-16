@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A settings picker's value (and its chevron): dim, a little lighter while its row has focus
+     (the value view duplicates the row's state). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/card_title" />
+    <item android:color="@color/text_dim" />
+</selector>

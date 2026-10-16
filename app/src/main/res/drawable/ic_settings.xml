@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Line icon from the design: 24 viewport, round-cap stroke. Tinted by its view. -->
+<!-- Settings: a gear in the line style of the bar's icons (2dp stroke, 24 viewport, drawn at
+     20dp): eight squared teeth on a ring, around a small centre circle. Tinted by its view. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="20dp"
     android:height="20dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
+        android:pathData="M10.21,4.82L10.61,2.1A10,10 0,0 1,13.39,2.1L13.79,4.82A7.4,7.4 0,0 1,15.81,5.66L18.02,4.01A10,10 0,0 1,19.99,5.98L18.34,8.19A7.4,7.4 0,0 1,19.18,10.21L21.9,10.61A10,10 0,0 1,21.9,13.39L19.18,13.79A7.4,7.4 0,0 1,18.34,15.81L19.99,18.02A10,10 0,0 1,18.02,19.99L15.81,18.34A7.4,7.4 0,0 1,13.79,19.18L13.39,21.9A10,10 0,0 1,10.61,21.9L10.21,19.18A7.4,7.4 0,0 1,8.19,18.34L5.98,19.99A10,10 0,0 1,4.01,18.02L5.66,15.81A7.4,7.4 0,0 1,4.82,13.79L2.1,13.39A10,10 0,0 1,2.1,10.61L4.82,10.21A7.4,7.4 0,0 1,5.66,8.19L4.01,5.98A10,10 0,0 1,5.98,4.01L8.19,5.66A7.4,7.4 0,0 1,10.21,4.82Z"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
         android:pathData="M15,12a3,3 0,1 0,-6 0a3,3 0,1 0,6 0"
         android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M12,2.8v2.4M12,18.8v2.4M2.8,12h2.4M18.8,12h2.4M5.5,5.5l1.7,1.7M16.8,16.8l1.7,1.7M5.5,18.5l1.7,-1.7M16.8,7.2l1.7,-1.7"
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M18.8,12a6.8,6.8 0,1 0,-13.6 0a6.8,6.8 0,1 0,13.6 0"
-        android:strokeColor="@android:color/white"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+        android:strokeWidth="2" />
 </vector>

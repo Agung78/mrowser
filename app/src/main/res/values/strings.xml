@@ -69,7 +69,7 @@
     <string name="import_favorites_unreadable">Couldn\'t read that file.</string>
     <string name="import_favorites_no_picker_title">No file picker</string>
     <string name="import_favorites_no_picker">This device has no file picker, so mrowser can\'t open a file to import.\n\nExport still works: it saves %1$s to Downloads.</string>
-    <string name="ad_block_lists_generated">List generated %1$s · %2$d domains</string>
+    <string name="ad_block_lists_generated">List generated %1$s · %2$s domains</string>
     <string name="ads_allowed_here">Ads allowed on this site</string>
     <string name="ads_blocked_here">Ads blocked on this site</string>
     <string name="ad_block_button">Ad blocker</string>

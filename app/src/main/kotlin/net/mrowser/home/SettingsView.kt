@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
+import java.text.NumberFormat
 import net.mrowser.R
 import net.mrowser.adblock.BlockList
 import net.mrowser.data.CursorSpeed
@@ -96,7 +97,7 @@ class SettingsView @JvmOverloads constructor(
         showToggle(popupRow, R.string.block_popups_title, s.blockPopups)
         showToggle(adsRow, R.string.block_ads_title, s.blockAds)
         cursorValue.setText(cursorLabelRes(s.cursorSpeed))
-        listsValue.text = blockList().size.toString()
+        listsValue.text = grouped(blockList().size)
     }
 
     /** The row is activated for "on"; its switch copies the row's state (activated, and focused
@@ -155,17 +156,20 @@ class SettingsView @JvmOverloads constructor(
             .show()
     }
 
+    /** A domain count with the locale's grouping: "92,745", not "92745". */
+    private fun grouped(n: Int): String = NumberFormat.getIntegerInstance().format(n)
+
     /** Attribution for the bundled lists: name, entries, licence and URL per source. */
     private fun showLists() {
         val list = blockList()
         val body = buildString {
             for (s in list.info.sources) {
                 append(s.name).append('\n')
-                s.entries?.let { append("  ").append(it).append(" domains · ") } ?: append("  ")
+                s.entries?.let { append("  ").append(grouped(it)).append(" domains · ") } ?: append("  ")
                 append(s.licence).append('\n')
                 append("  ").append(s.url).append("\n\n")
             }
-            append(context.getString(R.string.ad_block_lists_generated, list.info.generated ?: "—", list.size))
+            append(context.getString(R.string.ad_block_lists_generated, list.info.generated ?: "—", grouped(list.size)))
         }
         AlertDialog.Builder(context)
             .setTitle(R.string.ad_block_lists_title)

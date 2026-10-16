@@ -31,4 +31,11 @@ object FavoritesOps {
         val from = list.indexOfFirst { it.url == url }
         return from >= 0 && (from + delta).coerceIn(0, list.lastIndex) != from
     }
+
+    /** Import: keep [existing] and its order, append each [imported] url not already present,
+     *  in file order; a url repeated within the import counts once (first wins). */
+    fun merge(existing: List<Favorite>, imported: List<Favorite>): List<Favorite> {
+        val seen = existing.mapTo(HashSet()) { it.url }
+        return existing + imported.filter { seen.add(it.url) }
+    }
 }

@@ -95,4 +95,27 @@ class FavoritesOpsTest {
         assertEquals(false, FavoritesOps.canMove(listOf(a, b, c), "https://c.net", 5))
         assertEquals(false, FavoritesOps.canMove(listOf(a, b, c), "https://b.net", 0))
     }
+
+    @Test fun `merge keeps existing entries and their order, appending new ones in file order`() {
+        val c = Favorite("C", "https://c.net")
+        assertEquals(listOf(a, b, c), FavoritesOps.merge(listOf(a), listOf(b, c)))
+    }
+
+    @Test fun `merge skips imported urls already present and keeps the existing title`() {
+        val a2 = Favorite("A from the file", "https://a.net")
+        assertEquals(listOf(a, b), FavoritesOps.merge(listOf(a), listOf(a2, b)))
+    }
+
+    @Test fun `merge dedupes within the import, first occurrence wins`() {
+        val b2 = Favorite("B again", "https://b.net")
+        assertEquals(listOf(a, b), FavoritesOps.merge(listOf(a), listOf(b, b2)))
+    }
+
+    @Test fun `merge of nothing leaves the list as it was`() {
+        assertEquals(listOf(a, b), FavoritesOps.merge(listOf(a, b), emptyList()))
+    }
+
+    @Test fun `merge into an empty list is the deduped import`() {
+        assertEquals(listOf(b, a), FavoritesOps.merge(emptyList(), listOf(b, a, b)))
+    }
 }

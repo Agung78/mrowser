@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -29,7 +30,10 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import net.mrowser.adblock.AdBlocker
 import net.mrowser.data.DefaultFavorites
+import net.mrowser.data.DocumentPicker
 import net.mrowser.data.Favorite
+import net.mrowser.data.FavoritesBackup
+import net.mrowser.data.FavoritesBackupFile
 import net.mrowser.data.HistoryEntry
 import net.mrowser.data.JsonFavoritesStore
 import net.mrowser.data.JsonHistoryStore
@@ -248,6 +252,7 @@ class MainActivity : Activity() {
             }
         )
         settingsView.bind(settings) { adBlocker.list }
+        settingsView.bindFavorites(onExport = ::exportFavorites, onImport = ::importFavorites)
 
         layout.post { cursor.center(webView.width, webView.height) }
 
@@ -366,6 +371,95 @@ class MainActivity : Activity() {
         }
         pendingStoragePermission = onResult
         requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQ_STORAGE)
+    }
+
+    /** Issue #48: a fixed file in Downloads, no picker — see [FavoritesBackupFile]. */
+    private fun exportFavorites() {
+        ensureStoragePermission { granted ->
+            if (!granted) {
+                Toast.makeText(this, R.string.export_favorites_denied, Toast.LENGTH_LONG).show()
+                return@ensureStoragePermission
+            }
+            val items = favorites.findAll()
+            val path = FavoritesBackupFile.export(this, FavoritesBackup.toJson(items))
+            val message = if (path != null) {
+                getString(R.string.export_favorites_done, items.size, path)
+            } else {
+                getString(R.string.export_favorites_failed)
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** The system picker, opened in Downloads; the file comes back in [onActivityResult]. */
+    @Suppress("DEPRECATION")
+    private fun importFavorites() {
+        val intent = FavoritesBackupFile.pickIntent()
+        // Some TV boxes ship no DocumentsUI at all, and Android TV ones resolve the intent to a
+        // framework stub instead — see DocumentPicker.
+        if (!DocumentPicker.isUsable(intent.resolveActivity(packageManager)?.packageName)) {
+            showNoPicker()
+            return
+        }
+        try {
+            startActivityForResult(intent, REQ_IMPORT_FAVORITES)
+        } catch (e: ActivityNotFoundException) {
+            showNoPicker()
+        }
+    }
+
+    private fun showNoPicker() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.import_favorites_no_picker_title)
+            .setMessage(getString(R.string.import_favorites_no_picker, FavoritesBackup.FILE_NAME))
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_IMPORT_FAVORITES) return
+        val uri = data?.data
+        if (resultCode != RESULT_OK || uri == null) return
+        importFrom(uri)
+    }
+
+    /**
+     * Read [uri] off the main thread — promptly, while the picker's grant is live — then merge.
+     * Malformed, empty or unreadable all leave the favorites exactly as they were.
+     */
+    private fun importFrom(uri: Uri) {
+        Thread {
+            val text = FavoritesBackupFile.read(this, uri)
+            runOnUiThread { if (!isDestroyed) onImportRead(text) }
+        }.start()
+    }
+
+    private fun onImportRead(text: String?) {
+        val parsed = text?.let { FavoritesBackup.parse(it) }
+        if (parsed == null || parsed.favorites.isEmpty()) {
+            val problem = when {
+                text == null -> R.string.import_favorites_unreadable
+                parsed == null -> R.string.import_favorites_invalid
+                else -> R.string.import_favorites_empty
+            }
+            Toast.makeText(this, problem, Toast.LENGTH_LONG).show()
+            return
+        }
+        val summary = FavoritesBackup.summarize(favorites.findAll(), parsed.favorites)
+        favorites.addAll(parsed.favorites)
+        homeView.refresh()
+        val message = if (parsed.skipped == 0) {
+            getString(R.string.import_favorites_done, summary.added, summary.alreadyPresent)
+        } else {
+            getString(
+                R.string.import_favorites_done_skipped,
+                summary.added, summary.alreadyPresent, parsed.skipped
+            )
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     /** Obtainium is the one route that ends the update problem for good; the README says so too. */
@@ -588,6 +682,7 @@ class MainActivity : Activity() {
     companion object {
         private const val CHIP_TIMEOUT_MS = 30_000L
         private const val REQ_STORAGE = 101
+        private const val REQ_IMPORT_FAVORITES = 102
         private const val OBTAINIUM_ADD_URL = "obtainium://add/https://github.com/m-salehi-v/mrowser"
         private const val OBTAINIUM_URL = "https://github.com/ImranR98/Obtainium"
     }

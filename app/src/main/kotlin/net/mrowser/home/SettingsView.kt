@@ -13,18 +13,23 @@ import net.mrowser.data.CursorSpeed
 import net.mrowser.data.Settings
 import net.mrowser.data.SettingsRepository
 
-/** Settings overlay: auto-open, pop-up blocker, ad blocker, cursor speed, block-list info. */
+/** Settings overlay: auto-open, display-mode matching, pop-up blocker, ad blocker, cursor speed,
+ *  block-list info. */
 class SettingsView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
     private val autoOpenRow: View
+    private val frameRateRow: View
+    private val resolutionRow: View
     private val popupRow: View
     private val adsRow: View
     private val cursorRow: View
     private val listsRow: View
     private val autoOpenValue: TextView
+    private val frameRateValue: TextView
+    private val resolutionValue: TextView
     private val popupValue: TextView
     private val adsValue: TextView
     private val cursorValue: TextView
@@ -36,17 +41,23 @@ class SettingsView @JvmOverloads constructor(
     init {
         LayoutInflater.from(context).inflate(R.layout.settings_view, this, true)
         autoOpenRow = findViewById(R.id.settingsAutoOpenRow)
+        frameRateRow = findViewById(R.id.settingsFrameRateRow)
+        resolutionRow = findViewById(R.id.settingsResolutionRow)
         popupRow = findViewById(R.id.settingsPopupRow)
         adsRow = findViewById(R.id.settingsAdsRow)
         cursorRow = findViewById(R.id.settingsCursorRow)
         listsRow = findViewById(R.id.settingsListsRow)
         autoOpenValue = findViewById(R.id.settingsAutoOpenValue)
+        frameRateValue = findViewById(R.id.settingsFrameRateValue)
+        resolutionValue = findViewById(R.id.settingsResolutionValue)
         popupValue = findViewById(R.id.settingsPopupValue)
         adsValue = findViewById(R.id.settingsAdsValue)
         cursorValue = findViewById(R.id.settingsCursorValue)
         listsValue = findViewById(R.id.settingsListsValue)
 
         autoOpenRow.setOnClickListener { toggleAutoOpen() }
+        frameRateRow.setOnClickListener { toggleMatchFrameRate() }
+        resolutionRow.setOnClickListener { toggleMatchResolution() }
         popupRow.setOnClickListener { toggleBlockPopups() }
         adsRow.setOnClickListener { toggleBlockAds() }
         cursorRow.setOnClickListener { pickCursor() }
@@ -79,6 +90,8 @@ class SettingsView @JvmOverloads constructor(
     private fun render() {
         val s = current()
         autoOpenValue.setText(if (s.autoOpenPlayer) R.string.on else R.string.off)
+        frameRateValue.setText(if (s.matchFrameRate) R.string.on else R.string.off)
+        resolutionValue.setText(if (s.matchResolution) R.string.on else R.string.off)
         popupValue.setText(if (s.blockPopups) R.string.on else R.string.off)
         adsValue.setText(if (s.blockAds) R.string.on else R.string.off)
         cursorValue.setText(cursorLabelRes(s.cursorSpeed))
@@ -88,6 +101,18 @@ class SettingsView @JvmOverloads constructor(
     private fun toggleAutoOpen() {
         val s = current()
         repository?.update(s.copy(autoOpenPlayer = !s.autoOpenPlayer))
+        render()
+    }
+
+    private fun toggleMatchFrameRate() {
+        val s = current()
+        repository?.update(s.copy(matchFrameRate = !s.matchFrameRate))
+        render()
+    }
+
+    private fun toggleMatchResolution() {
+        val s = current()
+        repository?.update(s.copy(matchResolution = !s.matchResolution))
         render()
     }
 

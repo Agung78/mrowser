@@ -14,6 +14,8 @@ object SettingsJson {
             .put("blockPopups", settings.blockPopups)
             .put("blockAds", settings.blockAds)
             .put("adsAllowedOn", JSONArray(settings.adsAllowedOn.sorted()))
+            .put("matchFrameRate", settings.matchFrameRate)
+            .put("matchResolution", settings.matchResolution)
             .put("seeded", settings.seeded)
             .put("navHintShown", settings.navHintShown)
             .toString()
@@ -29,6 +31,8 @@ object SettingsJson {
                 blockPopups = o.optBoolean("blockPopups", defaults.blockPopups),
                 blockAds = o.optBoolean("blockAds", defaults.blockAds),
                 adsAllowedOn = stringSet(o.optJSONArray("adsAllowedOn")) ?: defaults.adsAllowedOn,
+                matchFrameRate = o.optBoolean("matchFrameRate", defaults.matchFrameRate),
+                matchResolution = o.optBoolean("matchResolution", defaults.matchResolution),
                 seeded = o.optBoolean("seeded", defaults.seeded),
                 navHintShown = o.optBoolean("navHintShown", defaults.navHintShown)
             )

@@ -1,151 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Scrolls: the rows outgrow a 1080p TV at 320dpi (540dp tall). A focused row is scrolled
+     into view by the ScrollView itself, so the D-pad needs nothing extra. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/surface"
-    android:padding="32dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="24dp"
-        android:text="@string/settings"
-        android:textColor="@color/on_surface"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+    android:fillViewport="true">
 
     <LinearLayout
-        android:id="@+id/settingsAutoOpenRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/focus_ring"
-        android:padding="18dp"
-        android:focusable="true">
+        android:orientation="vertical"
+        android:padding="32dp">
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/auto_open_title"
+            android:paddingBottom="24dp"
+            android:text="@string/settings"
             android:textColor="@color/on_surface"
-            android:textSize="18sp" />
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/settingsAutoOpenValue"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/settingsAutoOpenRow"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="18sp" />
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/auto_open_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsAutoOpenValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsFrameRateRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/match_frame_rate_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsFrameRateValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsResolutionRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/match_resolution_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsResolutionValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsPopupRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/block_popups_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsPopupValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsAdsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/block_ads_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsAdsValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsCursorRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/cursor_speed_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsCursorValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsListsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/focus_ring"
+            android:padding="18dp"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/ad_block_lists_title"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settingsListsValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent"
+                android:textSize="18sp" />
+        </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/settingsPopupRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/focus_ring"
-        android:padding="18dp"
-        android:focusable="true">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/block_popups_title"
-            android:textColor="@color/on_surface"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/settingsPopupValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/settingsAdsRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/focus_ring"
-        android:padding="18dp"
-        android:focusable="true">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/block_ads_title"
-            android:textColor="@color/on_surface"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/settingsAdsValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/settingsCursorRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/focus_ring"
-        android:padding="18dp"
-        android:focusable="true">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/cursor_speed_title"
-            android:textColor="@color/on_surface"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/settingsCursorValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/settingsListsRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/focus_ring"
-        android:padding="18dp"
-        android:focusable="true">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/ad_block_lists_title"
-            android:textColor="@color/on_surface"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/settingsListsValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="18sp" />
-    </LinearLayout>
-</LinearLayout>
+</ScrollView>

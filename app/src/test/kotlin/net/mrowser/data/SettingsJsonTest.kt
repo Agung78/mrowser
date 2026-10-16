@@ -68,4 +68,24 @@ class SettingsJsonTest {
     @Test fun `a malformed allowlist falls back to empty`() {
         assertTrue(SettingsJson.fromJson("""{"adsAllowedOn":"nope"}""").adsAllowedOn.isEmpty())
     }
+
+    @Test fun `round trips the display-mode matching toggles`() {
+        val s = Settings(matchFrameRate = true, matchResolution = true)
+        assertEquals(s, SettingsJson.fromJson(SettingsJson.toJson(s)))
+        val rateOnly = Settings(matchFrameRate = true)
+        assertEquals(rateOnly, SettingsJson.fromJson(SettingsJson.toJson(rateOnly)))
+    }
+
+    @Test fun `display-mode matching is off by default`() {
+        assertFalse(Settings().matchFrameRate)
+        assertFalse(Settings().matchResolution)
+    }
+
+    @Test fun `display-mode matching is off for a pre-upgrade file`() {
+        val s = SettingsJson.fromJson("""{"autoOpenPlayer":false,"blockAds":false,"seeded":true}""")
+        assertFalse(s.matchFrameRate)
+        assertFalse(s.matchResolution)
+        assertFalse(s.autoOpenPlayer)
+        assertTrue(s.seeded)
+    }
 }

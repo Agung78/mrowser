@@ -31,14 +31,18 @@ class PlayerActivity : Activity() {
 
     private var player: ExoPlayer? = null
     private var subtitleController: SubtitleSyncController? = null
+    private var playerView: PlayerView? = null
+    private var streamUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.player_activity)
         val playerView = findViewById<PlayerView>(R.id.playerView)
+        this.playerView = playerView
 
         val json = intent.getStringExtra(EXTRA_REQUEST) ?: run { finish(); return }
         val request = PlaybackRequest.fromJson(json)
+        streamUrl = request.url
 
         val trackSelector = DefaultTrackSelector(this)
         // DefaultMediaSourceFactory builds the source the request's MIME type asks for — HLS for
@@ -85,11 +89,21 @@ class PlayerActivity : Activity() {
         )
         playerView.post { installControls() }
 
-        exo.setMediaItem(buildMediaItem(request))
+        // Pick up where this stream was left (BACK to the browser, then Play synced). With nothing
+        // saved, no start position at all: an explicit 0 would pin a live stream to the start of
+        // its window instead of the live edge.
+        val startMs = resumePositions.startFor(request.url)
+        if (startMs > 0) exo.setMediaItem(buildMediaItem(request), startMs)
+        else exo.setMediaItem(buildMediaItem(request))
         exo.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 Toast.makeText(this@PlayerActivity, "Stream error — back to web player", Toast.LENGTH_LONG).show()
                 finish()
+            }
+
+            // Played to the end: the next open starts over.
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) resumePositions.clear(request.url)
             }
 
             // TV ignores D-pad/touch during playback, so without this the system
@@ -177,10 +191,33 @@ class PlayerActivity : Activity() {
         subtitleController?.resume()
     }
 
+    // media3's PlayerView does not consume BACK, so the press that was meant to dismiss the
+    // controls would close the player. Hide them first; exit only when they are already hidden.
+    // The settings and subtitle dialogs take BACK themselves and never get here.
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        val view = playerView
+        if (view != null && view.isControllerFullyVisible) {
+            view.hideController()
+            return
+        }
+        super.onBackPressed()
+    }
+
     override fun onStop() {
+        savePosition()
         super.onStop()
         player?.playWhenReady = false
         subtitleController?.stop()
+    }
+
+    private fun savePosition() {
+        val p = player ?: return
+        val url = streamUrl ?: return
+        // No timeline yet (left while still loading, or failed before it loaded): nothing is
+        // known about this stream, so keep whatever was saved rather than forget it.
+        if (p.duration == C.TIME_UNSET) return
+        resumePositions.record(url, p.currentPosition, p.duration, p.isCurrentMediaItemLive)
     }
 
     override fun onDestroy() {
@@ -189,10 +226,15 @@ class PlayerActivity : Activity() {
         subtitleController = null
         player?.release()
         player = null
+        playerView = null
     }
 
     companion object {
         const val EXTRA_REQUEST = "mrowser.request"
         private const val STEP_MS = 500L
+
+        // Process-wide, so it outlives each PlayerActivity: BACK finishes the player, and the
+        // next Play synced starts a new one.
+        private val resumePositions = ResumePositions()
     }
 }

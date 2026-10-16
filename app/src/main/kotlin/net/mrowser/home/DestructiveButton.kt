@@ -13,7 +13,7 @@ object DestructiveButton {
     /** [which] is `AlertDialog.BUTTON_POSITIVE` / `_NEGATIVE` / `_NEUTRAL`. */
     fun apply(dialog: AlertDialog, which: Int) {
         val button = dialog.getButton(which) ?: return
-        button.setBackgroundResource(R.drawable.dialog_button_destructive_bg)
-        button.setTextColor(dialog.context.getColorStateList(R.color.dialog_button_destructive_text))
+        button.setBackgroundResource(R.drawable.pill_danger_bg)
+        button.setTextColor(dialog.context.getColorStateList(R.color.pill_danger_content))
     }
 }

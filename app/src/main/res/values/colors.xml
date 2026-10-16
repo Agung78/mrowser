@@ -6,24 +6,40 @@
     <color name="bar_frost">#CC1A1A1A</color>
     <color name="cursor_outline">#CCFFFFFF</color>
 
-    <!-- Capsule address bar and the dialogs that match it. -->
-    <color name="capsule">#E0161414</color>
-    <color name="capsule_solid">#FF161414</color>
+    <!-- Design tokens shared by the bar, the dialogs and the screens. -->
+    <color name="card_surface">#FF1C1A1A</color>
     <color name="hairline">#14FFFFFF</color>
-    <color name="bar_separator">#1FFFFFFF</color>
-    <color name="bar_icon">#FFE8E4E3</color>
+    <color name="hairline_soft">#12FFFFFF</color>
+    <!-- Buttons and text fields at rest. -->
+    <color name="control">#FF2A2626</color>
+    <color name="field_focused">#FF322C2C</color>
+    <!-- A focused list row: a lighter fill and a soft white outline, never a white fill. -->
+    <color name="row_focused">#FF3A3434</color>
+    <color name="row_outline">#80FFFFFF</color>
+    <color name="text_primary">#FFF0ECEC</color>
+    <color name="text_secondary">#FFB9B3B2</color>
+    <color name="text_dim">#FF8C8C8C</color>
+    <color name="danger_text">#FFFF6B6B</color>
     <color name="focus_fill">#FFFFFFFF</color>
     <color name="on_focus_fill">#FF141414</color>
-    <color name="url_field">#0FFFFFFF</color>
-    <color name="url_field_focused">#1AFFFFFF</color>
-    <color name="url_dim">#FF8C8C8C</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- Capsule address bar. -->
+    <color name="capsule">#E0161414</color>
+    <color name="capsule_solid">#FF161414</color>
+    <color name="bar_separator">#1FFFFFFF</color>
+    <color name="bar_icon">#FFE8E4E3</color>
     <color name="badge">#FF2E2A2A</color>
 
     <color name="dialog_card">#F81C1A1A</color>
-    <color name="dialog_message">#FFB9B3B2</color>
-    <color name="dialog_button">#FF2A2626</color>
-    <color name="dialog_field">#FF262222</color>
-    <color name="dialog_field_focused">#FF2C2828</color>
-    <color name="danger_text">#FFFF6B6B</color>
-    <color name="transparent">#00000000</color>
+
+    <!-- Screens. -->
+    <color name="card_title">#FFCFC9C8</color>
+    <color name="update_pill">#E61C1A1A</color>
+    <color name="switch_track_off">#FF3A3535</color>
+    <color name="switch_track_off_focused">#FF5A5353</color>
+    <color name="switch_knob_off">#FFBDB6B5</color>
+    <color name="chip">#EB161414</color>
+    <color name="chip_border">#1AFFFFFF</color>
+    <color name="sync_box">#DB161414</color>
 </resources>

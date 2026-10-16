@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Text field inside a dialog. The 2dp stroke is always there (transparent at rest) so
-     focusing does not shift the text. -->
+<!-- Text field inside a dialog: the control fill, a step lighter with the accent ring while
+     focused. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape android:shape="rectangle">
             <corners android:radius="12dp" />
-            <solid android:color="@color/dialog_field_focused" />
+            <solid android:color="@color/field_focused" />
             <stroke android:width="2dp" android:color="@color/accent" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="12dp" />
-            <solid android:color="@color/dialog_field" />
-            <stroke android:width="2dp" android:color="@color/transparent" />
+            <solid android:color="@color/control" />
         </shape>
     </item>
 </selector>

@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog button pill: dark at rest, white when focused (as the capsule bar's icons). -->
+<!-- A pill (dialog buttons, the home and history pills): the control fill at rest, white when
+     focused. The radius is clamped to half the height. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <corners android:radius="21dp" />
+            <corners android:radius="100dp" />
             <solid android:color="@color/focus_fill" />
         </shape>
     </item>
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <corners android:radius="21dp" />
+            <corners android:radius="100dp" />
             <solid android:color="@color/focus_fill" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="21dp" />
-            <solid android:color="@color/dialog_button" />
+            <corners android:radius="100dp" />
+            <solid android:color="@color/control" />
         </shape>
     </item>
 </selector>

@@ -7,13 +7,13 @@
     android:viewportHeight="24">
     <path
         android:pathData="M7,11H17A2,2 0,0 1,19 13V18A2,2 0,0 1,17 20H7A2,2 0,0 1,5 18V13A2,2 0,0 1,7 11Z"
-        android:strokeColor="@color/url_dim"
+        android:strokeColor="@color/text_dim"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
         android:pathData="M8.5,11V8.5a3.5,3.5 0,0 1,7 0V11"
-        android:strokeColor="@color/url_dim"
+        android:strokeColor="@color/text_dim"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />

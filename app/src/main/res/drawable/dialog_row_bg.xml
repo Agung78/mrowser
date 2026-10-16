@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog list row highlight: a rounded white row, inset from the card's edge. The list
+<!-- Dialog list row highlight: a rounded row with the row-focus fill, inset from the card's edge. The list
      selector for AlertDialog setItems / setSingleChoiceItems; a ListView pads its rows by this
      inset, so the rows line up with it. A view background needs dialog_view_row_bg instead. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">

@@ -539,7 +539,7 @@ class MainActivity : Activity() {
         val parts = UrlDisplay.of(url)
         val text = SpannableString(parts?.text ?: url)
         if (parts != null) {
-            val dim = getColor(R.color.url_dim)
+            val dim = getColor(R.color.text_dim)
             val hostStart = parts.lead.length
             val hostEnd = hostStart + parts.host.length
             if (hostStart > 0) text.setSpan(ForegroundColorSpan(dim), 0, hostStart, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

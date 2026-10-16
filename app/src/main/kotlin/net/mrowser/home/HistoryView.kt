@@ -13,6 +13,7 @@ import android.widget.TextView
 import net.mrowser.R
 import net.mrowser.data.HistoryEntry
 import net.mrowser.data.HistoryRepository
+import net.mrowser.web.UrlDisplay
 
 /** History overlay: heading + clear-all + a list of visited sites, newest first. */
 class HistoryView @JvmOverloads constructor(
@@ -81,11 +82,12 @@ class HistoryView @JvmOverloads constructor(
         letter.text = entry.title.trim().take(1).uppercase().ifEmpty { "•" }
         letter.backgroundTintList = ColorStateList.valueOf(colorFor(entry.url))
         title.text = entry.title.ifBlank { entry.url }
-        url.text = entry.url
+        // The page as the address bar shows it: no https://, the raw URL for anything else.
+        url.text = UrlDisplay.of(entry.url)?.text ?: entry.url
         time.text = RelativeTime.format(nowMs - entry.visitedAt)
         v.setOnClickListener { onOpen(entry.url) }
         v.setOnLongClickListener { onAddFavorite(entry); true }
-        // Focus highlight comes from card_bg's state_focused (accent border).
+        // Focus highlight comes from row_bg's state_focused (the row-focus fill and outline).
         // No scale: rows are full-width, so scaling overflows the screen edges.
         return v
     }

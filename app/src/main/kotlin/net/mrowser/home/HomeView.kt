@@ -151,8 +151,9 @@ class HomeView @JvmOverloads constructor(
         cycle = null
     }
 
-    fun refresh() {
-        // Rebuilding destroys the focused card — an edit or delete from its long-press
+    /** Rebuild the grid. When focus was ours, it lands on focusUrl's card if there is one. */
+    fun refresh(focusUrl: String? = null) {
+        // Rebuilding destroys the focused card — an edit, move or delete from its long-press
         // dialog lands here — and the window's fallback then hands focus to the page
         // behind this overlay, where the D-pad drives the hidden cursor (#32). Only
         // when focus was ours to begin with: a refresh from the chrome bar's star
@@ -162,7 +163,11 @@ class HomeView @JvmOverloads constructor(
         grid.removeAllViews()
         emptyHint.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
         items.forEach { grid.addView(card(it)) }
-        if (hadFocus && findFocus() == null) restoreFocus()
+        if (!hadFocus) return
+        // The dialog's own window holds input meanwhile, so seating focus here is what
+        // the D-pad finds when it closes (#47): the moved or edited card, not the pill.
+        val target = focusUrl?.let { grid.findViewWithTag<View>(it) }
+        if (target?.requestFocus() != true && findFocus() == null) restoreFocus()
     }
 
     /**
@@ -189,6 +194,7 @@ class HomeView @JvmOverloads constructor(
         letter.text = fav.title.trim().take(1).uppercase().ifEmpty { "•" }
         letter.backgroundTintList = ColorStateList.valueOf(colorFor(fav.url))
         title.text = fav.title.ifBlank { fav.url }
+        v.tag = fav.url
         v.setOnClickListener { onOpen(fav) }
         v.setOnLongClickListener { onEdit(fav); true }
         v.setOnFocusChangeListener { card, hasFocus ->

@@ -4,7 +4,7 @@
     <string name="go">Go</string>
     <string name="back">Back</string>
     <string name="reload">Reload</string>
-    <string name="play_synced">▶ Play synced</string>
+    <string name="play_synced">Play synced</string>
     <string name="home">Home</string>
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Removed from favorites</string>
@@ -24,7 +24,10 @@
     <string name="speed">Speed</string>
     <string name="settings">Settings</string>
     <string name="subtitle_off">Off</string>
-    <string name="sub_sync_value">Sub Sync %1$+.1fs</string>
+    <string name="sub_sync_label">Subtitle delay</string>
+    <string name="sub_sync_value">%1$+.1fs</string>
+    <string name="sub_sync_earlier">Subtitles earlier</string>
+    <string name="sub_sync_later">Subtitles later</string>
     <string name="history">History</string>
     <string name="clear_history">Clear all</string>
     <string name="history_empty">No history yet — sites you visit will show up here.</string>

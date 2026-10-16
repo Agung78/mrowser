@@ -2,11 +2,17 @@ package net.mrowser.player
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.TypefaceSpan
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.webkit.CookieManager
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
@@ -146,8 +152,9 @@ class PlayerActivity : Activity() {
         exo.prepare()
         val subtitleView = playerView.findViewById<SubtitleView>(androidx.media3.ui.R.id.exo_subtitles)
         val syncValue = findViewById<TextView>(R.id.subSyncValue)
+        showDelay(syncValue, 0L)
         val controller = SubtitleSyncController(exo, subtitleView, request.subtitles, request.headers) { off ->
-            syncValue.text = getString(R.string.sub_sync_value, off / 1000.0)
+            showDelay(syncValue, off)
         }
         subtitleController = controller
         findViewById<View>(R.id.subSyncSubs).setOnClickListener { showSubtitlePicker() }
@@ -236,11 +243,26 @@ class PlayerActivity : Activity() {
             .show()
     }
 
-    // Our own subtitle button (in the sync box) — tinted accent when a track is showing, dim when off.
+    // Our own subtitle button (in the sync box) — the CC badge is accent when a track is showing
+    // (on the white focus disc too), light when off and dark on the disc.
     private fun updateSubsButton() {
         val on = subtitleController?.isShowing() == true
-        findViewById<TextView>(R.id.subSyncSubs)
-            .setTextColor(getColor(if (on) R.color.accent else R.color.hint))
+        findViewById<ImageView>(R.id.subSyncSubs).imageTintList =
+            if (on) ColorStateList.valueOf(getColor(R.color.accent)) else getColorStateList(R.color.bar_icon_tint)
+    }
+
+    /** "Subtitle delay +0.5s": the label in the box's text colour, the number white and medium. */
+    private fun showDelay(view: TextView, offsetMs: Long) {
+        val label = getString(R.string.sub_sync_label)
+        // A true minus sign: as wide as "+" in tabular figures, so the box doesn't shift.
+        val number = getString(R.string.sub_sync_value, offsetMs / 1000.0).replace('-', '\u2212')
+        view.text = SpannableStringBuilder(label).append(' ').append(
+            number,
+            ForegroundColorSpan(getColor(R.color.on_surface)),
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        ).apply {
+            setSpan(TypefaceSpan("sans-serif-medium"), length - number.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
     }
 
     private fun showSpeed(p: ExoPlayer) {

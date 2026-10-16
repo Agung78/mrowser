@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The play chip's button: a 36dp accent circle with a white play triangle, nudged right of
+     centre so it looks centred. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <path
+        android:fillColor="@color/accent"
+        android:pathData="M18,0A18,18 0,1 1,18 36A18,18 0,1 1,18 0Z" />
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M14.5,11L25.5,18L14.5,25Z" />
+</vector>

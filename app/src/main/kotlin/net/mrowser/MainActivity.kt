@@ -200,7 +200,7 @@ class MainActivity : Activity() {
         chromeClient = BrowserWebChromeClient(
             activity = this,
             container = layout,
-            onEnter = { bar.visibility = View.GONE; playChip.visibility = View.GONE; layout.invalidate() },
+            onEnter = { chrome.dismiss(); playChip.visibility = View.GONE; layout.invalidate() },
             onExit = { layout.invalidate() },
             onTitle = { url, title -> recordHistory(url, title) },
             onPopupBlocked = { Toast.makeText(this, R.string.popup_blocked, Toast.LENGTH_SHORT).show() },
@@ -281,10 +281,7 @@ class MainActivity : Activity() {
             chrome.onInteracted()
         }
         homeButton.setOnClickListener { showHome() }
-        historyButton.setOnClickListener {
-            showHistory(fromHome = false)
-            chrome.onInteracted()
-        }
+        historyButton.setOnClickListener { showHistory(fromHome = false) }
         favoriteButton.setOnClickListener {
             toggleCurrentFavorite()
             chrome.onInteracted()
@@ -339,8 +336,12 @@ class MainActivity : Activity() {
 
     /** Show exactly one overlay at a time: a second VISIBLE overlay steals window-global
      *  D-pad focus (focus search can't move past it), so every transition hides all three
-     *  first, then the caller shows the one it wants (or none, for openUrl). */
+     *  first, then the caller shows the one it wants (or none, for openUrl). The address bar
+     *  goes too: left up under an overlay, its buttons sit in the same focus search — the
+     *  capsule's right-hand cluster is level with home's History and settings buttons, so
+     *  RIGHT from home's address field jumped behind the overlay and got pulled back. */
     private fun hideAllOverlays() {
+        chrome.dismiss()
         homeView.hide()
         historyView.hide()
         settingsView.hide()

@@ -25,6 +25,20 @@ class ChromeController(
     fun onInteracted() = dispatch(ChromeVisibility.Event.Interacted)
     fun onPageInteracted() = dispatch(ChromeVisibility.Event.PageInteracted)
 
+    /**
+     * An overlay is opening over the page. The bar goes at once rather than sliding: the
+     * overlay covers it anyway, and while it is still VISIBLE (even mid-animation) the
+     * window-global D-pad focus search can land on its buttons, behind the overlay. Focus is
+     * left alone — the overlay is taking it, so the page must not.
+     */
+    fun dismiss() {
+        val next = ChromeVisibility.reduce(state, ChromeVisibility.Event.Dismissed)
+        if (next == state) return
+        state = next
+        bar.animate().cancel()
+        bar.visibility = View.GONE
+    }
+
     private fun dispatch(event: ChromeVisibility.Event) {
         val next = ChromeVisibility.reduce(state, event)
         if (next == state) return

@@ -9,6 +9,8 @@ object ChromeVisibility {
         data class RevealRequested(val atTop: Boolean) : Event
         data object Interacted : Event
         data object PageInteracted : Event
+        /** An overlay (home, history, settings) is opening over the page. */
+        data object Dismissed : Event
     }
 
     fun reduce(state: State, event: Event): State = when (state) {
@@ -18,6 +20,7 @@ object ChromeVisibility {
         }
         State.VISIBLE -> when (event) {
             is Event.PageInteracted -> State.HIDDEN
+            is Event.Dismissed -> State.HIDDEN
             is Event.Interacted -> State.VISIBLE
             is Event.RevealRequested -> State.VISIBLE
         }

@@ -26,5 +26,12 @@ class ChromeVisibilityTest {
     @Test fun `events other than reveal do nothing while hidden`() {
         assertEquals(State.HIDDEN, ChromeVisibility.reduce(State.HIDDEN, Event.Interacted))
         assertEquals(State.HIDDEN, ChromeVisibility.reduce(State.HIDDEN, Event.PageInteracted))
+        assertEquals(State.HIDDEN, ChromeVisibility.reduce(State.HIDDEN, Event.Dismissed))
+    }
+
+    // An overlay (home, history, settings) is opening over the page: a bar left visible under
+    // it stays in the window-global focus search and pulls D-pad focus out from behind it.
+    @Test fun `dismissal hides a visible bar`() {
+        assertEquals(State.HIDDEN, ChromeVisibility.reduce(State.VISIBLE, Event.Dismissed))
     }
 }

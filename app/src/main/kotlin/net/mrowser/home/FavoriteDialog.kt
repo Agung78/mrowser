@@ -74,8 +74,8 @@ object FavoriteDialog {
 
         val container = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            // 26dp, the dialog's padding, minus a little room for the focused pill's scale-up.
-            setPadding(dp(24), dp(12), dp(24), dp(4))
+            // The dialog's 26dp content inset; the move pills' focus scale spills into it.
+            setPadding(dp(26), dp(12), dp(26), dp(4))
             clipChildren = false
             clipToPadding = false
             fun spaced(bottom: Int) = LinearLayout.LayoutParams(

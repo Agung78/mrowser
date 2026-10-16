@@ -17,7 +17,7 @@
     -->
     <style name="Theme.Mrowser.Dialog" parent="@android:style/Theme.Material.Dialog.Alert">
         <item name="android:windowBackground">@drawable/dialog_background</item>
-        <!-- A 420dp card + the background's 16dp inset each side. A minimum, not a fixed width: windowFixedWidth* are private attributes, so a dialog with a long message still grows wider. -->
+        <!-- A 420dp card + the background's 16dp inset each side. A minimum, not a cap: windowFixedWidth* are private attributes. (On the TV a long message still wraps at this width.) -->
         <item name="android:windowMinWidthMajor">452dp</item>
         <item name="android:windowMinWidthMinor">452dp</item>
         <item name="android:dialogPreferredPadding">26dp</item>
@@ -37,8 +37,14 @@
         <item name="android:listViewStyle">@style/Widget.Mrowser.DialogList</item>
         <item name="android:listDividerAlertDialog">@drawable/dialog_row_gap</item>
         <item name="android:listChoiceBackgroundIndicator">@drawable/dialog_row_bg</item>
-        <item name="android:selectableItemBackground">@drawable/dialog_row_bg</item>
+        <item name="android:selectableItemBackground">@drawable/dialog_view_row_bg</item>
         <item name="android:listPreferredItemHeightSmall">46dp</item>
+        <!-- A ListView row already starts at the white row's edge (the list pads its rows by
+             the selector's inset), so its text sits 14dp in, as in the design. -->
+        <item name="android:listPreferredItemPaddingStart">14dp</item>
+        <item name="android:listPreferredItemPaddingEnd">14dp</item>
+        <item name="android:listPreferredItemPaddingLeft">14dp</item>
+        <item name="android:listPreferredItemPaddingRight">14dp</item>
         <item name="android:textColorAlertDialogListItem">@color/dialog_item_text</item>
         <item name="android:textAppearanceListItemSmall">@style/TextAppearance.Mrowser.DialogItem</item>
         <!-- select_dialog_singlechoice_material sizes its rows with textAppearanceMedium. -->
@@ -65,12 +71,16 @@
         <item name="android:textColor">@color/dialog_item_text</item>
     </style>
 
-    <!-- The ScrollView around the framework's button row, which already pads 12dp/4dp. -->
+    <!-- The dialog's button row. Tuned for the leanback dialog layout Android TV uses, where this
+         style lands on the ButtonBarLayout itself (left-aligned: positive, negative, gap,
+         neutral): the first button's 8dp margin + 18dp = the 26dp content inset. clipToPadding
+         is off so a focused button's 1.05 scale is not cut by the padding. -->
     <style name="Widget.Mrowser.DialogButtonBar" parent="">
-        <item name="android:paddingStart">6dp</item>
-        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">26dp</item>
         <item name="android:paddingTop">10dp</item>
-        <item name="android:paddingBottom">16dp</item>
+        <item name="android:paddingBottom">20dp</item>
+        <item name="android:clipToPadding">false</item>
     </style>
 
     <!-- A dialog button. Also built by hand for FavoriteDialog's move row. -->

@@ -16,7 +16,8 @@
 
         <!-- The capsule address bar. Left to right is also the D-pad order; the edge
              controls point their outward next-focus at themselves, so focus cannot leave the
-             bar for the WebView / cursor layer behind it. -->
+             bar for the WebView / cursor layer behind it. clipToPadding is off so a focused end
+             button's 1.08 scale can spill into the padding instead of being cut. -->
         <LinearLayout
             android:id="@+id/chromeBar"
             android:layout_width="match_parent"
@@ -27,6 +28,7 @@
             android:layout_marginEnd="32dp"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
+            android:clipToPadding="false"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bar_background"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog list row highlight: a rounded white row, inset from the card's edge. Used as the
-     list selector (AlertDialog setItems / setSingleChoiceItems) and as selectableItemBackground
-     (media3's TrackSelectionView rows). -->
+<!-- Dialog list row highlight: a rounded white row, inset from the card's edge. The list
+     selector for AlertDialog setItems / setSingleChoiceItems; a ListView pads its rows by this
+     inset, so the rows line up with it. A view background needs dialog_view_row_bg instead. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true" android:drawable="@drawable/dialog_row_fill" />
     <item android:state_pressed="true" android:drawable="@drawable/dialog_row_fill" />

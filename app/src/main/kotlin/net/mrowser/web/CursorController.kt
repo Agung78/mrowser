@@ -45,7 +45,10 @@ class CursorController(
             val ticks = CursorGeometry.wheelStep(
                 dirY, y, webView.height, edgeZonePx, WHEEL_TICKS_PER_FRAME
             )
-            if (ticks != 0f) wheel(ticks)
+            if (ticks != 0f) {
+                wheel(ticks)
+                scrollClippedOverlay(ticks)
+            }
             invalidate()
             handler.postDelayed(this, FRAME_MS)
         }
@@ -107,6 +110,18 @@ class CursorController(
         )
         webView.dispatchGenericMotionEvent(e)
         e.recycle()
+    }
+
+    /**
+     * What the wheel cannot reach: a fixed overlay cut off by `overflow: hidden`,
+     * such as a consent dialog taller than the screen (#31). See ClippedOverlayScroll.
+     */
+    private fun scrollClippedOverlay(ticks: Float) {
+        val js = ClippedOverlayScroll.script(
+            x, y, webView.width, webView.height,
+            ClippedOverlayScroll.cssDelta(ticks, WHEEL_TICK_PX)
+        ) ?: return
+        webView.evaluateJavascript(js, null)
     }
 
     private fun dispatch(action: Int, down: Long, event: Long) {

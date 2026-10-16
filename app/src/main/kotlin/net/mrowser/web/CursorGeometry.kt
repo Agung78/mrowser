@@ -9,8 +9,15 @@ object CursorGeometry {
 
     data class Point(val x: Float, val y: Float)
 
-    fun clamp(x: Float, y: Float, width: Int, height: Int): Point =
-        Point(x.coerceIn(0f, width.toFloat()), y.coerceIn(0f, height.toFloat()))
+    /**
+     * Keeps the cursor on the view's last pixel, not one past it: `y == height` is
+     * outside the page, so a wheel there is hit-tested onto nothing and falls through
+     * to the document. That is where edge scrolling pins the cursor (#31).
+     */
+    fun clamp(x: Float, y: Float, width: Int, height: Int): Point = Point(
+        x.coerceIn(0f, (width - 1).coerceAtLeast(0).toFloat()),
+        y.coerceIn(0f, (height - 1).coerceAtLeast(0).toFloat())
+    )
 
     fun step(current: Point, dirX: Int, dirY: Int, speedPx: Float, width: Int, height: Int): Point =
         clamp(current.x + dirX * speedPx, current.y + dirY * speedPx, width, height)

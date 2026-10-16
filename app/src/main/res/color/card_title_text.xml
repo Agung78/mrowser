@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A favorite card's title: soft at rest, white on the focused card. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/on_surface" />
+    <item android:color="@color/card_title" />
+</selector>

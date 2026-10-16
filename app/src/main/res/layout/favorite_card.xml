@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A favorite: the card surface with a hairline; focused, a white ring (card_bg) plus the lift
+     and scale HomeView animates. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="150dp"
     android:layout_height="wrap_content"
     android:layout_margin="10dp"
     android:orientation="vertical"
     android:background="@drawable/card_bg"
-    android:padding="12dp"
+    android:padding="10dp"
     android:focusable="true">
 
     <TextView
@@ -15,7 +17,7 @@
         android:background="@drawable/letter_tile_bg"
         android:gravity="center"
         android:text="M"
-        android:textColor="#141414"
+        android:textColor="@color/on_focus_fill"
         android:textSize="36sp"
         android:textStyle="bold" />
 
@@ -24,9 +26,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
+        android:paddingStart="2dp"
+        android:paddingEnd="2dp"
         android:maxLines="1"
         android:ellipsize="end"
+        android:duplicateParentState="true"
         android:text="@string/app_name"
-        android:textColor="@color/on_surface"
+        android:textColor="@color/card_title_text"
         android:textSize="14sp" />
 </LinearLayout>

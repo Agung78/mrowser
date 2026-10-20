@@ -247,7 +247,15 @@ class MainActivity : Activity() {
         // it, so the hold falls through to the normal BACK chain and exits fullscreen.
         layout.onLongBack = {
             if (chromeClient.isFullscreen) false
-            else { chrome.requestReveal(atTop = true); true }
+            else {
+                chrome.requestReveal(atTop = true)
+                Toast.makeText(this, R.string.address_bar_opened, Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
+        layout.onModeChanged = { mode ->
+            val message = if (mode == CursorController.Mode.CURSOR) R.string.mode_cursor else R.string.mode_focus
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
         homeView.bind(
@@ -364,7 +372,7 @@ class MainActivity : Activity() {
         showNavHintOnce()
     }
 
-    /** One-time nudge: the chrome bar has no MENU key to summon it on most TV remotes. */
+    /** One-time remote guide: the chrome bar has no MENU key to summon it on most TV remotes. */
     private fun showNavHintOnce() {
         if (settings.get().navHintShown) return
         settings.update(settings.get().copy(navHintShown = true))
@@ -460,7 +468,7 @@ class MainActivity : Activity() {
     private fun playStream() {
         val request = sniffer.bestRequest()
         if (request == null) {
-            Toast.makeText(this, "No stream detected yet", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_stream_yet), Toast.LENGTH_SHORT).show()
             return
         }
         startActivity(

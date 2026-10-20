@@ -170,7 +170,7 @@ class PlayerActivity : Activity() {
                         playerView?.postDelayed(retryNow, action.delayMs)
                     }
                     is PlaybackRetryPolicy.Action.GiveUp -> {
-                        Toast.makeText(this@PlayerActivity, "Stream error — back to web player", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@PlayerActivity, getString(R.string.player_error), Toast.LENGTH_LONG).show()
                         finish()
                     }
                 }
@@ -297,7 +297,7 @@ class PlayerActivity : Activity() {
             if (on) ColorStateList.valueOf(getColor(R.color.accent)) else getColorStateList(R.color.bar_icon_tint)
     }
 
-    /** "Subtitle delay +0.5s": the label in the box's text colour, the number white and medium. */
+    /** "Subtitle timing +0.5s": the label in the box's text colour, the number white and medium. */
     private fun showDelay(view: TextView, offsetMs: Long) {
         val label = getString(R.string.sub_sync_label)
         // A true minus sign: as wide as "+" in tabular figures, so the box doesn't shift.

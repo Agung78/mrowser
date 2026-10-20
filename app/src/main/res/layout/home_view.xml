@@ -42,7 +42,7 @@
             android:drawablePadding="10dp"
             android:singleLine="true"
             android:textSize="17sp"
-            android:hint="@string/url_hint"
+            android:hint="@string/home_url_hint"
             android:imeOptions="actionGo"
             android:inputType="textUri"
             android:textColor="@color/on_surface"

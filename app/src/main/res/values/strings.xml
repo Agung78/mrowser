@@ -1,14 +1,15 @@
 <resources>
     <string name="app_name">mrowser</string>
     <string name="url_hint">Enter address</string>
+    <string name="home_url_hint">Type a web address and press Go</string>
     <string name="go">Go</string>
     <string name="back">Back</string>
     <string name="reload">Reload</string>
-    <string name="play_synced">Play synced</string>
+    <string name="play_synced">Play in synced player</string>
     <string name="home">Home</string>
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Removed from favorites</string>
-    <string name="favorites_empty">Add a site — press ★ while browsing, or type a URL above.</string>
+    <string name="favorites_empty">No favorites yet. Type a web address above, or press ★ on any page to save it here.</string>
     <string name="edit_favorite">Edit favorite</string>
     <string name="title_hint">Title</string>
     <string name="save">Save</string>
@@ -24,20 +25,23 @@
     <string name="speed">Speed</string>
     <string name="settings">Settings</string>
     <string name="subtitle_off">Off</string>
-    <string name="sub_sync_label">Subtitle delay</string>
+    <string name="sub_sync_label">Subtitle timing</string>
     <string name="sub_sync_value">%1$+.1fs</string>
     <string name="sub_sync_earlier">Subtitles earlier</string>
     <string name="sub_sync_later">Subtitles later</string>
     <string name="history">History</string>
     <string name="clear_history">Clear all</string>
-    <string name="history_empty">No history yet — sites you visit will show up here.</string>
+    <string name="history_empty">No history yet. Pages you open will appear here.</string>
     <string name="exit_title">Exit mrowser?</string>
     <string name="exit_message">Close the browser and return to the home screen.</string>
     <string name="exit">Exit</string>
     <string name="close_tab_title">Close this page?</string>
     <string name="close_tab_message">Return to the home screen.</string>
     <string name="close_tab">Close</string>
-    <string name="nav_hint">Hold BACK for the address bar</string>
+    <string name="nav_hint">Arrows move the pointer · OK clicks · Hold OK to switch pointer/focus mode · Hold BACK for the address bar</string>
+    <string name="mode_cursor">Pointer mode — arrows move the pointer</string>
+    <string name="mode_focus">Focus mode — arrows jump between links</string>
+    <string name="address_bar_opened">Address bar open — BACK closes it</string>
     <string name="auto_open_title">Auto-open synced player</string>
     <string name="match_frame_rate_title">Match frame rate</string>
     <string name="match_resolution_title">Match resolution</string>
@@ -89,6 +93,8 @@
     <string name="update_manual">mrowser can\'t save the file on this device.\n\nOpen this on another device:\n%1$s\n\nOr use Obtainium to keep mrowser updated for you.</string>
     <string name="obtainium_title">Obtainium not installed</string>
     <string name="obtainium_message">Obtainium installs apps straight from GitHub Releases and keeps them updated for you — mrowser included.\n\nmrowser can\'t install it here. Get it on a phone or computer from:\n\n%1$s</string>
+    <string name="player_error">Couldn\'t play this stream — back to the page</string>
+    <string name="no_stream_yet">No video stream found on this page yet</string>
     <string name="player_reconnecting">Connection lost — reconnecting…</string>
     <string name="page_recovered">The page crashed and was reloaded</string>
 </resources>

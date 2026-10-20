@@ -45,7 +45,7 @@ mrowser fixes all three:
 
 ![mrowser: opening an HLS page from the home screen, the stream being detected and handed to the native player, and app-rendered subtitles](docs/screenshots/demo.gif)
 
-*A page with an HLS video → the stream is detected (note the **Play synced** chip) → automatic handoff to the native Media3 player → subtitles rendered by the app, with their timing nudged live to +1.5s while the film keeps playing. Recorded on an Android TV device; the page serves Big Buck Bunny (Creative Commons) over HLS with a side-loaded subtitle track.*
+*A page with an HLS video → the stream is detected (note the **Play in synced player** chip) → automatic handoff to the native Media3 player → subtitles rendered by the app, with their timing nudged live to +1.5s while the film keeps playing. Recorded on an Android TV device; the page serves Big Buck Bunny (Creative Commons) over HLS with a side-loaded subtitle track.*
 
 ---
 
@@ -53,7 +53,7 @@ mrowser fixes all three:
 
 | Home screen | Native player with live subtitle sync |
 | --- | --- |
-| ![mrowser home screen — address bar, History, Settings, and a favorites grid](docs/screenshots/home.png) | ![mrowser native player showing the sub-sync box (CC + Sub Sync offset) over a playing stream](docs/screenshots/player-sub-sync.png) |
+| ![mrowser home screen — address bar, History, Settings, and a favorites grid](docs/screenshots/home.png) | ![mrowser native player showing the sub-sync box (CC + Subtitle timing offset) over a playing stream](docs/screenshots/player-sub-sync.png) |
 | D-pad-friendly launcher: address bar, favorites grid, History and Settings. | Stream handed off to Media3/ExoPlayer; the top-left **sub-sync box** toggles subtitles and nudges their timing (±0.5s) live — no rebuffer. |
 
 ---

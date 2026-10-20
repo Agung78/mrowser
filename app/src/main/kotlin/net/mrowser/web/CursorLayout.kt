@@ -37,6 +37,9 @@ class CursorLayout @JvmOverloads constructor(
      */
     var onLongBack: () -> Boolean = { false }
 
+    /** Set by the Activity; fired after a long-press OK flips the mode, so it can say which one is on. */
+    var onModeChanged: (CursorController.Mode) -> Unit = {}
+
     var playChip: android.view.View? = null
     var onChipClick: () -> Unit = {}
 
@@ -51,7 +54,11 @@ class CursorLayout @JvmOverloads constructor(
     private val longPressHandler = Handler(Looper.getMainLooper())
     private var okDown = false
     private var longPressed = false
-    private val longPress = Runnable { longPressed = true; cursor.toggleMode() }
+    private val longPress = Runnable {
+        longPressed = true
+        cursor.toggleMode()
+        onModeChanged(cursor.mode)
+    }
 
     private var backDown = false
     private var backLongPressed = false

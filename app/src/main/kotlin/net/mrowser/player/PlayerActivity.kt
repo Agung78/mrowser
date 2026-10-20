@@ -37,9 +37,7 @@ import androidx.media3.ui.SubtitleView
 import androidx.media3.ui.TrackSelectionDialogBuilder
 import net.mrowser.R
 import net.mrowser.data.JsonSettingsStore
-import net.mrowser.data.SettingsRepository
 import net.mrowser.net.NetworkWatcher
-import net.mrowser.stream.MediaMimeType
 import net.mrowser.stream.PlaybackRequest
 import java.io.File
 
@@ -67,7 +65,7 @@ class PlayerActivity : Activity() {
 
     // Read-only here; the browser writes it. Read when a stream's tracks arrive, so a toggle
     // flipped in Settings applies to the next stream with no restart.
-    private val settings: SettingsRepository by lazy { JsonSettingsStore(File(filesDir, "settings.json")) }
+    private val settings: JsonSettingsStore by lazy { JsonSettingsStore(File(filesDir, "settings.json")) }
 
     // Display-mode matching. The matcher runs once per stream (this activity is one stream);
     // the window's own preference before that is what onStop puts back, and onStart re-asks.
@@ -330,7 +328,13 @@ class PlayerActivity : Activity() {
             .setUri(request.url)
             // Null for a progressive file: the factory reads the container itself, and a query
             // string can hide the extension it would otherwise guess a manifest from.
-            .setMimeType(MediaMimeType.of(request.url))
+            .setMimeType(
+                when (net.mrowser.stream.MediaUrlClassifier.classify(request.url)) {
+                    net.mrowser.stream.MediaUrlClassifier.MediaKind.MANIFEST_HLS -> "application/x-mpegURL"
+                    net.mrowser.stream.MediaUrlClassifier.MediaKind.MANIFEST_DASH -> "application/dash+xml"
+                    else -> null
+                }
+            )
             .build()
 
     override fun onStart() {

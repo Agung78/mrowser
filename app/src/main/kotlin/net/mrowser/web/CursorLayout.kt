@@ -129,30 +129,23 @@ class CursorLayout @JvmOverloads constructor(
     /**
      * BACK tap keeps every meaning it has today (see handleBack); BACK held summons
      * the chrome bar. Most TV remotes have no MENU key, which was the only other way
-     * to open it. The routing itself is the pure BackGesture — this is just the
-     * applier: it owns the timer, the flags, and the BACK chain.
+     * to open it. It owns the timer, the flags, and the BACK chain.
      */
     private fun handleBackKey(event: KeyEvent): Boolean {
-        when (BackGesture.decide(event.action, backDown, backLongPressed, chrome.isVisible)) {
-            BackGesture.Decision.ArmLongPress -> {
-                backDown = true
-                backLongPressed = false
-                longPressHandler.postDelayed(backLongPress, LONG_PRESS_MS)
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (!backDown) {
+                    backDown = true
+                    backLongPressed = false
+                    if (!chrome.isVisible) longPressHandler.postDelayed(backLongPress, LONG_PRESS_MS)
+                }
             }
-            BackGesture.Decision.BeginWithoutArming -> {
-                backDown = true
-                backLongPressed = false
-            }
-            BackGesture.Decision.RunTapChain -> {
+            KeyEvent.ACTION_UP -> {
+                val wasLong = backLongPressed
                 backDown = false
                 longPressHandler.removeCallbacks(backLongPress)
-                return handleBack()
+                if (!wasLong) return handleBack()
             }
-            BackGesture.Decision.Swallow -> {
-                backDown = false
-                longPressHandler.removeCallbacks(backLongPress)
-            }
-            BackGesture.Decision.Ignore -> Unit
         }
         return true
     }

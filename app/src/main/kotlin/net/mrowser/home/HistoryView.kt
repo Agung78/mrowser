@@ -12,7 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import net.mrowser.R
 import net.mrowser.data.HistoryEntry
-import net.mrowser.data.HistoryRepository
+import net.mrowser.data.JsonHistoryStore
 import net.mrowser.web.UrlDisplay
 
 /** History overlay: heading + clear-all + a list of visited sites, newest first. */
@@ -25,7 +25,7 @@ class HistoryView @JvmOverloads constructor(
     private val emptyHint: TextView
     private val clearButton: Button
 
-    private var repository: HistoryRepository? = null
+    private var repository: JsonHistoryStore? = null
     private var onOpen: (String) -> Unit = {}
     private var onClear: () -> Unit = {}
     private var onAddFavorite: (HistoryEntry) -> Unit = {}
@@ -40,7 +40,7 @@ class HistoryView @JvmOverloads constructor(
     }
 
     fun bind(
-        repository: HistoryRepository,
+        repository: JsonHistoryStore,
         onOpen: (String) -> Unit,
         onClear: () -> Unit,
         onAddFavorite: (HistoryEntry) -> Unit

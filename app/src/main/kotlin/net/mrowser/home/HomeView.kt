@@ -20,7 +20,7 @@ import android.widget.GridLayout
 import android.widget.TextView
 import net.mrowser.R
 import net.mrowser.data.Favorite
-import net.mrowser.data.FavoritesRepository
+import net.mrowser.data.JsonFavoritesStore
 import net.mrowser.update.Release
 import net.mrowser.web.UrlNormalizer
 
@@ -35,7 +35,7 @@ class HomeView @JvmOverloads constructor(
     private val urlInput: EditText
     private val updateButton: Button
 
-    private var repository: FavoritesRepository? = null
+    private var repository: JsonFavoritesStore? = null
     private var onOpen: (Favorite) -> Unit = {}
     private var onSubmitUrl: (String) -> Unit = {}
     private var onEdit: (Favorite) -> Unit = {}
@@ -70,7 +70,7 @@ class HomeView @JvmOverloads constructor(
     }
 
     fun bind(
-        repository: FavoritesRepository,
+        repository: JsonFavoritesStore,
         onOpen: (Favorite) -> Unit,
         onSubmitUrl: (String) -> Unit,
         onEdit: (Favorite) -> Unit,

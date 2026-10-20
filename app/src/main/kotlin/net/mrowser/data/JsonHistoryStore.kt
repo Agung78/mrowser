@@ -4,21 +4,21 @@ import android.util.Log
 import java.io.File
 import java.util.concurrent.Executors
 
-/** HistoryRepository backed by a JSON file; pure logic delegated to HistoryOps/HistoryJson. */
-class JsonHistoryStore(private val file: File) : HistoryRepository {
+/** History store backed by a JSON file; pure logic delegated to HistoryOps/HistoryJson. */
+class JsonHistoryStore(private val file: File) {
 
     private var items: List<HistoryEntry> =
         if (file.exists()) HistoryJson.fromJson(file.readText()) else emptyList()
 
     private val io = Executors.newSingleThreadExecutor()
 
-    override fun findAll(): List<HistoryEntry> = items
+    fun findAll(): List<HistoryEntry> = items
 
-    override fun record(entry: HistoryEntry) {
+    fun record(entry: HistoryEntry) {
         items = HistoryOps.record(items, entry); persist()
     }
 
-    override fun clear() {
+    fun clear() {
         items = HistoryOps.clear(); persist()
     }
 

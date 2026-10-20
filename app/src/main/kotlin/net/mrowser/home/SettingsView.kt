@@ -12,7 +12,7 @@ import net.mrowser.R
 import net.mrowser.adblock.BlockList
 import net.mrowser.data.CursorSpeed
 import net.mrowser.data.Settings
-import net.mrowser.data.SettingsRepository
+import net.mrowser.data.JsonSettingsStore
 
 /** Settings overlay: auto-open, display-mode matching, pop-up blocker, ad blocker, cursor speed,
  *  block-list info, favorites export/import. */
@@ -31,7 +31,7 @@ class SettingsView @JvmOverloads constructor(
     private val cursorValue: TextView
     private val listsValue: TextView
 
-    private var repository: SettingsRepository? = null
+    private var repository: JsonSettingsStore? = null
     private var blockList: () -> BlockList = { BlockList.EMPTY }
 
     // The file work needs the Activity (permissions, the picker's result), so it lives there.
@@ -62,7 +62,7 @@ class SettingsView @JvmOverloads constructor(
     }
 
     /** [blockList] is a provider because the list loads on a background thread after launch. */
-    fun bind(repository: SettingsRepository, blockList: () -> BlockList) {
+    fun bind(repository: JsonSettingsStore, blockList: () -> BlockList) {
         this.repository = repository
         this.blockList = blockList
     }

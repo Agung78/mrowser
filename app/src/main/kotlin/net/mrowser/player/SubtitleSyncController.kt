@@ -128,7 +128,8 @@ class SubtitleSyncController(
             }
             return
         }
-        val active = ActiveCueFinder.activeAt(cues, player.currentPosition + offsetMs)
+        val pos = player.currentPosition + offsetMs
+        val active = cues.takeWhile { it.startMs <= pos }.filter { pos < it.endMs }
         val texts = active.map { it.text }
         if (texts != lastTexts) {
             lastTexts = texts.toList()

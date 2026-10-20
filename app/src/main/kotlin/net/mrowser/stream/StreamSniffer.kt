@@ -70,7 +70,17 @@ class StreamSniffer(
         val cookie = CookieManager.getInstance().getCookie(best.url)
         val headers = PlaybackHeaders.build(best.url, pageUrl, userAgent(), best.headers)
             .let { if (cookie != null) it + ("Cookie" to cookie) else it }
-        val subtitles = SubtitlePlan.build(StreamCandidateSelector.selectSubtitles(candidates))
+        val subtitles = StreamCandidateSelector.selectSubtitles(candidates).mapIndexed { idx, c ->
+            val isSrt = c.url.substringBefore('?').lowercase().endsWith(".srt")
+            val mime = if (isSrt) "application/x-subrip" else "text/vtt"
+            val detected = SubtitleLang.detect(c.url)
+            SubtitleTrack(
+                url = c.url,
+                mimeType = mime,
+                language = detected?.code ?: "und",
+                label = detected?.label ?: "Subtitle ${idx + 1}"
+            )
+        }
         return PlaybackRequest(best.url, headers, subtitles, pageUrl)
     }
 

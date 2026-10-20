@@ -4,8 +4,8 @@ import android.util.Log
 import java.io.File
 import java.util.concurrent.Executors
 
-/** SettingsRepository backed by a JSON file; pure logic delegated to SettingsJson. */
-class JsonSettingsStore(private val file: File) : SettingsRepository {
+/** Settings store backed by a JSON file; pure logic delegated to SettingsJson. */
+class JsonSettingsStore(private val file: File) {
 
     // Volatile: AdBlocker's settings-provider lambdas call get() from WebView worker threads on
     // every intercepted request, while the UI thread writes via update() (SettingsView,
@@ -18,9 +18,9 @@ class JsonSettingsStore(private val file: File) : SettingsRepository {
 
     private val io = Executors.newSingleThreadExecutor()
 
-    override fun get(): Settings = current
+    fun get(): Settings = current
 
-    override fun update(settings: Settings) {
+    fun update(settings: Settings) {
         current = settings
         persist()
     }

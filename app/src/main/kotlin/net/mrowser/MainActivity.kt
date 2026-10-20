@@ -35,8 +35,6 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import net.mrowser.adblock.AdBlocker
-import net.mrowser.data.DefaultFavorites
-import net.mrowser.data.DocumentPicker
 import net.mrowser.data.Favorite
 import net.mrowser.data.FavoritesBackup
 import net.mrowser.data.FavoritesBackupFile
@@ -44,13 +42,11 @@ import net.mrowser.data.HistoryEntry
 import net.mrowser.data.JsonFavoritesStore
 import net.mrowser.data.JsonHistoryStore
 import net.mrowser.data.JsonSettingsStore
-import net.mrowser.handoff.HandoffController
-import net.mrowser.home.DestructiveButton
 import net.mrowser.home.FavoriteDialog
 import net.mrowser.home.HistoryView
 import net.mrowser.home.HomeView
-import net.mrowser.home.OverlayFocus
 import net.mrowser.home.SettingsView
+import net.mrowser.player.PlayerActivity
 import net.mrowser.net.NetworkWatcher
 import net.mrowser.stream.SniffingWebViewClient
 import net.mrowser.stream.StreamSniffer
@@ -117,7 +113,6 @@ class MainActivity : Activity() {
 
     /** Set when a page is opened from home; clears the back-stack on its first load. */
     private var clearHistoryOnLoad = false
-    private lateinit var handoff: HandoffController
     private val uiHandler = Handler(Looper.getMainLooper())
     private val chipHideRunnable = Runnable { playChip.visibility = View.GONE }
 
@@ -170,13 +165,12 @@ class MainActivity : Activity() {
             onStreamAvailable = {
                 runOnUiThread {
                     showChip()
-                    if (settings.get().autoOpenPlayer) handoff.play()
+                    if (settings.get().autoOpenPlayer) playStream()
                 }
             },
             onCleared = { playChip.visibility = View.GONE },
             schedule = { delayMs, task -> uiHandler.postDelayed(task, delayMs) }
         )
-        handoff = HandoffController(this, sniffer)
 
         // Extracted to its own method (rather than inlined here) so ART on API 23 (minSdk) does
         // not have to resolve ServiceWorkerController/ServiceWorkerClient while verifying
@@ -246,7 +240,7 @@ class MainActivity : Activity() {
         layout.cursor = cursor
         layout.chrome = chrome
         layout.playChip = playChip
-        layout.onChipClick = { handoff.play() }
+        layout.onChipClick = { playStream() }
         layout.onBack = { chromeClient.exitIfFullscreen() }
         layout.onExitPage = { confirmCloseTab() }
         // Refuse the reveal in fullscreen (the bar would sit under the video) and report
@@ -397,10 +391,13 @@ class MainActivity : Activity() {
      *  flag rather than an is-empty check — a user who deletes them must not get them
      *  back. Existing installs have no flag in settings.json, so they seed once on upgrade.
      *  Added in reverse: FavoritesOps.add prepends, so seeding back-to-front leaves the
-     *  grid in DefaultFavorites.ALL order. */
+     *  grid in the listed order. */
     private fun seedDefaultFavorites() {
         if (settings.get().seeded) return
-        DefaultFavorites.ALL.asReversed().forEach { favorites.add(it) }
+        listOf(
+            Favorite("YouTube", "https://www.youtube.com/tv"),
+            Favorite("Google", "https://www.google.com")
+        ).asReversed().forEach { favorites.add(it) }
         settings.update(settings.get().copy(seeded = true))
     }
 
@@ -447,8 +444,9 @@ class MainActivity : Activity() {
     private fun importFavorites() {
         val intent = FavoritesBackupFile.pickIntent()
         // Some TV boxes ship no DocumentsUI at all, and Android TV ones resolve the intent to a
-        // framework stub instead — see DocumentPicker.
-        if (!DocumentPicker.isUsable(intent.resolveActivity(packageManager)?.packageName)) {
+        // framework stub instead.
+        val pkg = intent.resolveActivity(packageManager)?.packageName
+        if (pkg == null || pkg == "com.android.tv.frameworkpackagestubs") {
             showNoPicker()
             return
         }
@@ -457,6 +455,18 @@ class MainActivity : Activity() {
         } catch (e: ActivityNotFoundException) {
             showNoPicker()
         }
+    }
+
+    private fun playStream() {
+        val request = sniffer.bestRequest()
+        if (request == null) {
+            Toast.makeText(this, "No stream detected yet", Toast.LENGTH_SHORT).show()
+            return
+        }
+        startActivity(
+            Intent(this, PlayerActivity::class.java)
+                .putExtra(PlayerActivity.EXTRA_REQUEST, request.toJson())
+        )
     }
 
     private fun showNoPicker() {
@@ -718,37 +728,15 @@ class MainActivity : Activity() {
         // overlay and turns the D-pad into the hidden cursor. Either way the user is
         // stuck, so re-seat focus where it belongs and swallow this one press.
         if (event.action == KeyEvent.ACTION_DOWN) {
-            val target = OverlayFocus.recoveryTarget(
-                settingsVisible = settingsView.visibility == View.VISIBLE,
-                historyVisible = historyView.visibility == View.VISIBLE,
-                homeVisible = homeView.visibility == View.VISIBLE,
-                focus = focusZone()
-            )
-            val recovered = when (target) {
-                OverlayFocus.Zone.SETTINGS -> settingsView.restoreFocus()
-                OverlayFocus.Zone.HISTORY -> historyView.restoreFocus()
-                OverlayFocus.Zone.HOME -> homeView.restoreFocus()
-                OverlayFocus.Zone.PAGE -> layout.requestFocus()
-                else -> false
+            val recovered = when {
+                settingsView.visibility == View.VISIBLE -> !settingsView.hasFocus() && settingsView.restoreFocus()
+                historyView.visibility == View.VISIBLE -> !historyView.hasFocus() && historyView.restoreFocus()
+                homeView.visibility == View.VISIBLE -> !homeView.hasFocus() && homeView.restoreFocus()
+                else -> !layout.hasFocus() && layout.requestFocus()
             }
             if (recovered) return true
         }
         return super.dispatchKeyEvent(event)
-    }
-
-    /** Which of the four subtrees currently holds D-pad focus, for [OverlayFocus]. */
-    private fun focusZone(): OverlayFocus.Zone {
-        var v: View? = currentFocus
-        while (v != null) {
-            when (v) {
-                settingsView -> return OverlayFocus.Zone.SETTINGS
-                historyView -> return OverlayFocus.Zone.HISTORY
-                homeView -> return OverlayFocus.Zone.HOME
-                layout -> return OverlayFocus.Zone.PAGE
-            }
-            v = v.parent as? View
-        }
-        return OverlayFocus.Zone.NONE
     }
 
     @Suppress("DEPRECATION")
@@ -789,7 +777,12 @@ class MainActivity : Activity() {
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.exit) { _, _ -> finish() }
             .show()
-            .also { DestructiveButton.apply(it, AlertDialog.BUTTON_POSITIVE) }
+            .also {
+                it.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                    setBackgroundResource(R.drawable.pill_danger_bg)
+                    setTextColor(context.getColorStateList(R.color.pill_danger_content))
+                }
+            }
     }
 
     companion object {

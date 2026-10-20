@@ -4,33 +4,33 @@ import android.util.Log
 import java.io.File
 import java.util.concurrent.Executors
 
-/** FavoritesRepository backed by a JSON file; pure logic delegated to FavoritesOps/FavoritesJson. */
-class JsonFavoritesStore(private val file: File) : FavoritesRepository {
+/** Favorites store backed by a JSON file; pure logic delegated to FavoritesOps/FavoritesJson. */
+class JsonFavoritesStore(private val file: File) {
 
     private var items: List<Favorite> =
         if (file.exists()) FavoritesJson.fromJson(file.readText()) else emptyList()
 
     private val io = Executors.newSingleThreadExecutor()
 
-    override fun findAll(): List<Favorite> = items
+    fun findAll(): List<Favorite> = items
 
-    override fun add(favorite: Favorite) {
+    fun add(favorite: Favorite) {
         items = FavoritesOps.add(items, favorite); persist()
     }
 
-    override fun remove(url: String) {
+    fun remove(url: String) {
         items = FavoritesOps.remove(items, url); persist()
     }
 
-    override fun update(oldUrl: String, favorite: Favorite) {
+    fun update(oldUrl: String, favorite: Favorite) {
         items = FavoritesOps.update(items, oldUrl, favorite); persist()
     }
 
-    override fun move(url: String, delta: Int) {
+    fun move(url: String, delta: Int) {
         items = FavoritesOps.move(items, url, delta); persist()
     }
 
-    override fun addAll(imported: List<Favorite>) {
+    fun addAll(imported: List<Favorite>) {
         items = FavoritesOps.merge(items, imported); persist()
     }
 

@@ -9,7 +9,7 @@ import android.widget.LinearLayout
 import net.mrowser.R
 import net.mrowser.data.Favorite
 import net.mrowser.data.FavoritesOps
-import net.mrowser.data.FavoritesRepository
+import net.mrowser.data.JsonFavoritesStore
 
 /**
  * Edit (title + url), reorder, or delete a favorite. onChanged gets the url of the card that
@@ -17,7 +17,7 @@ import net.mrowser.data.FavoritesRepository
  */
 object FavoriteDialog {
 
-    fun show(context: Context, repository: FavoritesRepository, fav: Favorite, onChanged: (String?) -> Unit) {
+    fun show(context: Context, repository: JsonFavoritesStore, fav: Favorite, onChanged: (String?) -> Unit) {
         val builder = AlertDialog.Builder(context)
         // The dialog theme's context, so the fields and the move pills pick up its styles.
         val ctx = builder.context
@@ -100,7 +100,12 @@ object FavoriteDialog {
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
-            .also { DestructiveButton.apply(it, AlertDialog.BUTTON_NEUTRAL) }
+            .also {
+                it.getButton(AlertDialog.BUTTON_NEUTRAL)?.apply {
+                    setBackgroundResource(R.drawable.pill_danger_bg)
+                    setTextColor(context.getColorStateList(R.color.pill_danger_content))
+                }
+            }
     }
 
     private const val DISABLED_ALPHA = 0.35f

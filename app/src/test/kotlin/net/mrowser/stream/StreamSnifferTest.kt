@@ -29,6 +29,16 @@ class StreamSnifferTest {
         assertEquals(1, announced)
     }
 
+    @Test fun `ad-host manifest does not spend the announce before the real one`() {
+        val s = sniffer()
+        s.onPageStarted("https://site.net/watch")
+        s.onRequest("https://imasdk.googleapis.com/x.m3u8")
+        assertEquals(0, announced)
+        assertTrue(!s.hasStream())
+        s.onRequest("https://cdn.net/master.m3u8")
+        assertEquals(1, announced)
+    }
+
     @Test fun `announces a dash manifest at once`() {
         val s = sniffer()
         s.onPageStarted("https://site.net/watch")

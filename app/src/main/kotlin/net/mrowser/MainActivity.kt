@@ -165,13 +165,6 @@ class MainActivity : Activity() {
             onCountChanged = { n -> showBlockedCount(n) }
         )
         adBlocker.load { resources.openRawResource(R.raw.blocklist) }
-        // Extracted to its own method (rather than inlined here) so ART on API 23 (minSdk) does
-        // not have to resolve ServiceWorkerController/ServiceWorkerClient while verifying
-        // onCreate itself — those classes don't exist below API 24, and a method ART can't fully
-        // resolve gets verified interpreted-with-checks instead of fast, which would otherwise
-        // apply to the whole of onCreate.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) registerServiceWorkerAdBlock()
-
         sniffer = StreamSniffer(
             userAgent = { webView.settings.userAgentString },
             onStreamAvailable = {
@@ -184,6 +177,13 @@ class MainActivity : Activity() {
             schedule = { delayMs, task -> uiHandler.postDelayed(task, delayMs) }
         )
         handoff = HandoffController(this, sniffer)
+
+        // Extracted to its own method (rather than inlined here) so ART on API 23 (minSdk) does
+        // not have to resolve ServiceWorkerController/ServiceWorkerClient while verifying
+        // onCreate itself — those classes don't exist below API 24, and a method ART can't fully
+        // resolve gets verified interpreted-with-checks instead of fast, which would otherwise
+        // apply to the whole of onCreate.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) registerServiceWorkerHooks()
 
         externalLinks = ExternalIntentLauncher(
             context = this,
@@ -690,21 +690,24 @@ class MainActivity : Activity() {
         // after finish(), along with the WebView and the ~740 KB BlockList. Clearing it here
         // also stops a recreated Activity's service-worker fetches from being filtered by this
         // now-stale AdBlocker (stale pageHost, stale settings cache).
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) unregisterServiceWorkerAdBlock()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) unregisterServiceWorkerHooks()
         updateIo.shutdownNow()
     }
 
     /** Service-worker fetches bypass WebViewClient.shouldInterceptRequest entirely, so they need
-     *  their own intercept hook. Kept out of onCreate — see the call site there. */
-    private fun registerServiceWorkerAdBlock() {
+     *  their own sniff + ad-block hook. Kept out of onCreate — see the call site there.
+     *  Must run after [sniffer] is created. */
+    private fun registerServiceWorkerHooks() {
         ServiceWorkerController.getInstance().setServiceWorkerClient(object : ServiceWorkerClient() {
-            override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
-                adBlocker.interceptServiceWorker(request)
+            override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
+                sniffer.onRequest(request.url.toString(), request.requestHeaders.orEmpty())
+                return adBlocker.interceptServiceWorker(request)
+            }
         })
     }
 
-    /** Counterpart to [registerServiceWorkerAdBlock]; see [onDestroy]. */
-    private fun unregisterServiceWorkerAdBlock() {
+    /** Counterpart to [registerServiceWorkerHooks]; see [onDestroy]. */
+    private fun unregisterServiceWorkerHooks() {
         ServiceWorkerController.getInstance().setServiceWorkerClient(null)
     }
 

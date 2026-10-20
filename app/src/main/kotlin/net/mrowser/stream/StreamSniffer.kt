@@ -60,7 +60,10 @@ class StreamSniffer(
         if (hasStream() && announced.compareAndSet(false, true)) onStreamAvailable()
     }
 
-    fun hasStream(): Boolean = candidates.any { it.kind in PLAYABLE }
+    // Excludes ad hosts like selectBest does: otherwise an ad manifest would spend the one-shot
+    // announce while bestRequest() returns null, and the real manifest would never announce.
+    fun hasStream(): Boolean =
+        candidates.any { it.kind in PLAYABLE && !MediaUrlClassifier.isAdHost(it.url) }
 
     fun bestRequest(): PlaybackRequest? {
         val best = StreamCandidateSelector.selectBest(candidates) ?: return null

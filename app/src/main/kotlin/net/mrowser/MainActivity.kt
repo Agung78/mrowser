@@ -413,7 +413,9 @@ class MainActivity : Activity() {
         if (settings.get().seeded) return
         listOf(
             Favorite("YouTube", "https://www.youtube.com/tv"),
-            Favorite("Google", "https://www.google.com")
+            Favorite("Google", "https://www.google.com"),
+            Favorite("Cineby", "https://cineby.rocks/"),
+            Favorite("Idlix", "https://z2.idlixku.com/")
         ).asReversed().forEach { favorites.add(it) }
         settings.update(settings.get().copy(seeded = true))
     }

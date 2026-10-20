@@ -119,7 +119,7 @@ class SubtitleSyncController(
         }
         val active = ActiveCueFinder.activeAt(cues, player.currentPosition + offsetMs)
         val texts = active.map { it.text }
-        if (!texts.contentEquals(lastTexts)) {
+        if (texts != lastTexts) {
             lastTexts = texts.toList()
             subtitleView?.setCues(active.map { Cue.Builder().setText(it.text).build() })
             showing = true

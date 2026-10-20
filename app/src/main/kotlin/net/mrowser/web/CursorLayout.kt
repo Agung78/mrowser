@@ -120,6 +120,12 @@ class CursorLayout @JvmOverloads constructor(
                 okDown = false
                 longPressHandler.removeCallbacks(longPress)
                 if (!longPressed) {
+                    // Focus mode has no visible cursor: OK is the native Enter on the focused
+                    // element. DOWN was swallowed for the long-press timer, so replay it first.
+                    if (cursor.mode == CursorController.Mode.FOCUS) {
+                        super.dispatchKeyEvent(KeyEvent(event.downTime, event.eventTime, KeyEvent.ACTION_DOWN, event.keyCode, 0))
+                        return super.dispatchKeyEvent(event)
+                    }
                     if (chipContains(cursor.x, cursor.y)) onChipClick() else cursor.tap()
                 }
             }

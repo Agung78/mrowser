@@ -42,6 +42,9 @@ class CursorController(
                 CursorGeometry.Point(x, y), dirX, dirY, speed, webView.width, webView.height
             )
             x = p.x; y = p.y
+            // Hover tracks the pointer, so :hover-revealed controls exist before a click lands.
+            val now = SystemClock.uptimeMillis()
+            dispatch(MotionEvent.ACTION_HOVER_MOVE, now, now)
             val ticks = CursorGeometry.wheelStep(
                 dirY, y, webView.height, edgeZonePx, WHEEL_TICKS_PER_FRAME
             )
@@ -68,11 +71,35 @@ class CursorController(
         dirX = 0; dirY = 0; handler.removeCallbacks(mover)
     }
 
+    private var pendingRelease: Runnable? = null
+
+    /**
+     * A desktop-style left click: hover, press, hold [CLICK_HOLD_MS], release. Sent with
+     * mouse tool/source so Chromium takes it as a mouse (no touch double-tap or fling-stop
+     * heuristics, `pointerType === "mouse"`), and held long enough for pages that
+     * re-render between pointerdown and pointerup.
+     */
     fun tap() {
+        flushRelease()
         val t = SystemClock.uptimeMillis()
         dispatch(MotionEvent.ACTION_HOVER_MOVE, t, t)
-        dispatch(MotionEvent.ACTION_DOWN, t, t)
-        dispatch(MotionEvent.ACTION_UP, t, t + 1)
+        dispatch(MotionEvent.ACTION_DOWN, t, t, MotionEvent.BUTTON_PRIMARY)
+        dispatch(MotionEvent.ACTION_BUTTON_PRESS, t, t, MotionEvent.BUTTON_PRIMARY)
+        val release = Runnable {
+            pendingRelease = null
+            val r = SystemClock.uptimeMillis()
+            dispatch(MotionEvent.ACTION_BUTTON_RELEASE, t, r)
+            dispatch(MotionEvent.ACTION_UP, t, r)
+        }
+        pendingRelease = release
+        handler.postDelayed(release, CLICK_HOLD_MS)
+    }
+
+    /** Runs a still-pending release now, so a second tap never overlaps the first. */
+    private fun flushRelease() {
+        val r = pendingRelease ?: return
+        handler.removeCallbacks(r)
+        r.run()
     }
 
     fun toggleMode() {
@@ -92,24 +119,9 @@ class CursorController(
      */
     private fun wheel(ticks: Float) {
         val t = SystemClock.uptimeMillis()
-        // The cursor only hovers on tap, so tell Chromium where the pointer is first:
-        // the wheel is hit-tested at that position.
+        // Tell Chromium where the pointer is first: the wheel is hit-tested at that position.
         dispatch(MotionEvent.ACTION_HOVER_MOVE, t, t)
-        val props = arrayOf(MotionEvent.PointerProperties().apply {
-            id = 0
-            toolType = MotionEvent.TOOL_TYPE_MOUSE
-        })
-        val coords = arrayOf(MotionEvent.PointerCoords().apply {
-            this.x = this@CursorController.x
-            this.y = this@CursorController.y
-            setAxisValue(MotionEvent.AXIS_VSCROLL, ticks)
-        })
-        val e = MotionEvent.obtain(
-            t, t, MotionEvent.ACTION_SCROLL, 1, props, coords,
-            0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0
-        )
-        webView.dispatchGenericMotionEvent(e)
-        e.recycle()
+        dispatch(MotionEvent.ACTION_SCROLL, t, t, vscroll = ticks)
     }
 
     /**
@@ -124,15 +136,36 @@ class CursorController(
         webView.evaluateJavascript(js, null)
     }
 
-    private fun dispatch(action: Int, down: Long, event: Long) {
-        val e = MotionEvent.obtain(down, event, action, x, y, 0)
-        if (action == MotionEvent.ACTION_HOVER_MOVE) webView.dispatchGenericMotionEvent(e)
-        else webView.dispatchTouchEvent(e)
+    /** One mouse-source event at the cursor. Hover/scroll/button-press go generic; the rest as touch. */
+    private fun dispatch(
+        action: Int, down: Long, event: Long, buttons: Int = 0, vscroll: Float = 0f
+    ) {
+        val props = arrayOf(MotionEvent.PointerProperties().apply {
+            id = 0
+            toolType = MotionEvent.TOOL_TYPE_MOUSE
+        })
+        val coords = arrayOf(MotionEvent.PointerCoords().apply {
+            this.x = this@CursorController.x
+            this.y = this@CursorController.y
+            if (vscroll != 0f) setAxisValue(MotionEvent.AXIS_VSCROLL, vscroll)
+        })
+        val e = MotionEvent.obtain(
+            down, event, action, 1, props, coords,
+            0, buttons, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0
+        )
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP) {
+            webView.dispatchTouchEvent(e)
+        } else {
+            webView.dispatchGenericMotionEvent(e)
+        }
         e.recycle()
     }
 
     companion object {
         const val FRAME_MS = 16L
+
+        /** Press-to-release gap of a click. */
+        const val CLICK_HOLD_MS = 40L
 
         /** What the page scrolled per frame back when this moved the document itself. */
         const val SCROLL_STEP_PX = 24

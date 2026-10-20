@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- The update channel saves the APK into public Downloads, where a file manager can reach
          it; mrowser never installs it, so there is no REQUEST_INSTALL_PACKAGES here. Scoped
          storage makes this free from API 29, hence the cap. -->

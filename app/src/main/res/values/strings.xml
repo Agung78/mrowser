@@ -89,4 +89,6 @@
     <string name="update_manual">mrowser can\'t save the file on this device.\n\nOpen this on another device:\n%1$s\n\nOr use Obtainium to keep mrowser updated for you.</string>
     <string name="obtainium_title">Obtainium not installed</string>
     <string name="obtainium_message">Obtainium installs apps straight from GitHub Releases and keeps them updated for you — mrowser included.\n\nmrowser can\'t install it here. Get it on a phone or computer from:\n\n%1$s</string>
+    <string name="player_reconnecting">Connection lost — reconnecting…</string>
+    <string name="page_recovered">The page crashed and was reloaded</string>
 </resources>

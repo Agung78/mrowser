@@ -70,6 +70,11 @@ class SubtitleSyncController(
         onOffsetChanged(offsetMs)
     }
 
+    /** Re-fetch the selected track if its download failed (e.g. during a network outage). */
+    fun retryFailed() {
+        if (selectedIndex >= 0) select(selectedIndex)
+    }
+
     fun trackLabels(): List<String> = tracks.map { it.label }
 
     /** True when a track is selected (subtitles render), false when off — drives the CC button icon. */
@@ -92,10 +97,16 @@ class SubtitleSyncController(
             }
             Thread {
                 val text = SubtitleFetcher.fetch(track.url, trackHeaders)
-                val cues = if (text != null) SubtitleCueParser.parse(text) else emptyList()
-                handler.post {
-                    parsedCache[index] = cues
-                    inFlight.remove(index)
+                if (text != null) {
+                    val cues = SubtitleCueParser.parse(text)
+                    handler.post {
+                        parsedCache[index] = cues
+                        inFlight.remove(index)
+                    }
+                } else {
+                    handler.post {
+                        inFlight.remove(index)
+                    }
                 }
             }.start()
         }

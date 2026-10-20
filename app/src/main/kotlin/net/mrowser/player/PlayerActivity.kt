@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.os.SystemClock
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -24,16 +25,20 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.SubtitleView
 import androidx.media3.ui.TrackSelectionDialogBuilder
 import net.mrowser.R
 import net.mrowser.data.JsonSettingsStore
 import net.mrowser.data.SettingsRepository
+import net.mrowser.net.NetworkWatcher
 import net.mrowser.stream.MediaMimeType
 import net.mrowser.stream.PlaybackRequest
 import java.io.File
@@ -45,6 +50,20 @@ class PlayerActivity : Activity() {
     private var subtitleController: SubtitleSyncController? = null
     private var playerView: PlayerView? = null
     private var streamUrl: String? = null
+    // Network recovery (see PlaybackRetryPolicy): retries run on a backoff timer, and a network
+    // coming back (Wi-Fi reconnect/switch) retries at once instead of waiting out the delay.
+    private var outageStartedAt = 0L
+    private var retryAttempt = 0
+    private var awaitingRetry = false
+    private val retryNow = Runnable { awaitingRetry = false; player?.prepare() }
+    private val networkWatcher by lazy {
+        NetworkWatcher(this) {
+            if (awaitingRetry) {
+                playerView?.removeCallbacks(retryNow)
+                retryNow.run()
+            }
+        }
+    }
 
     // Read-only here; the browser writes it. Read when a stream's tracks arrive, so a toggle
     // flipped in Settings applies to the next stream with no restart.
@@ -85,7 +104,11 @@ class PlayerActivity : Activity() {
         }
         val exo = ExoPlayer.Builder(this)
             .setTrackSelector(trackSelector)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(dataSourceFactory)
+                    // More per-chunk retries before a fatal error (default 3): rides out short drops silently.
+                    .setLoadErrorHandlingPolicy(DefaultLoadErrorHandlingPolicy(LOAD_RETRIES))
+            )
             .build()
         player = exo
         playerView.player = exo
@@ -129,8 +152,30 @@ class PlayerActivity : Activity() {
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                Toast.makeText(this@PlayerActivity, "Stream error — back to web player", Toast.LENGTH_LONG).show()
-                finish()
+                val now = SystemClock.elapsedRealtime()
+                if (outageStartedAt == 0L) outageStartedAt = now
+                val action = PlaybackRetryPolicy.decide(
+                    behindLiveWindow = error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW,
+                    isNetwork = error.errorCode in 2000..2999 || error.cause is java.io.IOException,
+                    httpStatus = (error.cause as? HttpDataSource.InvalidResponseCodeException)?.responseCode,
+                    attempt = retryAttempt + 1,
+                    outageMs = now - outageStartedAt
+                )
+                when (action) {
+                    is PlaybackRetryPolicy.Action.LiveEdge -> player?.run { seekToDefaultPosition(); prepare() }
+                    is PlaybackRetryPolicy.Action.Retry -> {
+                        retryAttempt++
+                        if (retryAttempt == 1) {
+                            Toast.makeText(this@PlayerActivity, R.string.player_reconnecting, Toast.LENGTH_SHORT).show()
+                        }
+                        awaitingRetry = true
+                        playerView?.postDelayed(retryNow, action.delayMs)
+                    }
+                    is PlaybackRetryPolicy.Action.GiveUp -> {
+                        Toast.makeText(this@PlayerActivity, "Stream error — back to web player", Toast.LENGTH_LONG).show()
+                        finish()
+                    }
+                }
             }
 
             // Played to the end: the next open starts over.
@@ -143,6 +188,9 @@ class PlayerActivity : Activity() {
             // playing — a paused stream should still let the screen sleep.
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 if (isPlaying) {
+                    if (outageStartedAt != 0L) subtitleController?.retryFailed()
+                    outageStartedAt = 0L
+                    retryAttempt = 0
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -288,6 +336,7 @@ class PlayerActivity : Activity() {
     override fun onStart() {
         super.onStart()
         subtitleController?.resume()
+        networkWatcher.start()
         if (requestedModeId != 0) setPreferredDisplayMode(requestedModeId)
     }
 
@@ -310,6 +359,7 @@ class PlayerActivity : Activity() {
         setPreferredDisplayMode(originalModeId)
         player?.playWhenReady = false
         subtitleController?.stop()
+        networkWatcher.stop()
     }
 
     private fun savePosition() {
@@ -326,6 +376,7 @@ class PlayerActivity : Activity() {
         setPreferredDisplayMode(originalModeId)
         subtitleController?.stop()
         subtitleController = null
+        playerView?.removeCallbacks(retryNow)
         player?.release()
         player = null
         playerView = null
@@ -333,6 +384,7 @@ class PlayerActivity : Activity() {
 
     companion object {
         const val EXTRA_REQUEST = "mrowser.request"
+        private const val LOAD_RETRIES = 6
         private const val STEP_MS = 500L
         private const val TAG = "PlayerActivity"
 

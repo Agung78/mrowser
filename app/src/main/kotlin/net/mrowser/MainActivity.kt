@@ -51,6 +51,7 @@ import net.mrowser.home.HistoryView
 import net.mrowser.home.HomeView
 import net.mrowser.home.OverlayFocus
 import net.mrowser.home.SettingsView
+import net.mrowser.net.NetworkWatcher
 import net.mrowser.stream.SniffingWebViewClient
 import net.mrowser.stream.StreamSniffer
 import net.mrowser.update.ApkDownloader
@@ -73,6 +74,16 @@ class MainActivity : Activity() {
 
     private lateinit var layout: CursorLayout
     private lateinit var webView: WebView
+    // The last top-level load that failed (offline / Wi-Fi switch); reloaded when a network comes back.
+    private var failedUrl: String? = null
+    private val networkWatcher by lazy {
+        NetworkWatcher(this) {
+            val url = failedUrl ?: return@NetworkWatcher
+            failedUrl = null
+            // Only if the user is still on that page — never yank them back from where they went since.
+            if (::webView.isInitialized && webView.url == url) webView.reload()
+        }
+    }
     private lateinit var urlInput: EditText
     private lateinit var chrome: ChromeController
     private lateinit var chromeClient: BrowserWebChromeClient
@@ -195,7 +206,9 @@ class MainActivity : Activity() {
                 }
             },
             onExternalScheme = { url -> externalLinks.launch(url) },
-            onNavigationBlocked = { Toast.makeText(this, R.string.navigation_blocked, Toast.LENGTH_SHORT).show() }
+            onNavigationBlocked = { Toast.makeText(this, R.string.navigation_blocked, Toast.LENGTH_SHORT).show() },
+            onMainFrameError = { url -> failedUrl = url },
+            onRendererGone = { recoverFromRendererCrash() }
         )
         chromeClient = BrowserWebChromeClient(
             activity = this,
@@ -619,6 +632,28 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.ad_block_button_count, n)
         }
+    }
+
+    /** Relaunch onto the same page: the dead WebView can't be reused, and onCreate opens a VIEW intent. */
+    private fun recoverFromRendererCrash() {
+        val url = webView.url
+        (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+        webView.destroy()
+        Toast.makeText(this, R.string.page_recovered, Toast.LENGTH_SHORT).show()
+        intent = if (url != null && IncomingUrl.fromViewIntent(Intent.ACTION_VIEW, url) != null) {
+            Intent(this, MainActivity::class.java).setAction(Intent.ACTION_VIEW).setData(Uri.parse(url))
+        } else Intent(this, MainActivity::class.java)
+        recreate()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        networkWatcher.start()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        networkWatcher.stop()
     }
 
     override fun onPause() {

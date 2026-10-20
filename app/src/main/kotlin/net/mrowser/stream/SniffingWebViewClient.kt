@@ -2,6 +2,8 @@ package net.mrowser.stream
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -22,8 +24,23 @@ class SniffingWebViewClient(
     /** Hand a non-web URL (`obtainium://`, `intent://`, `mailto:`) to the system. */
     private val onExternalScheme: (String) -> Unit = {},
     /** A top-level navigation to a listed host was refused; the page stays. */
-    private val onNavigationBlocked: () -> Unit = {}
+    private val onNavigationBlocked: () -> Unit = {},
+    /** The top-level page failed to load (offline, DNS, timeout); the url to retry later. */
+    private val onMainFrameError: (String) -> Unit = {},
+    /** The renderer died (OOM on a low-memory box); the WebView is unusable and must be replaced. */
+    private val onRendererGone: () -> Unit = {}
 ) : WebViewClient() {
+
+    override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+        super.onReceivedError(view, request, error)
+        if (request?.isForMainFrame == true) onMainFrameError(request.url.toString())
+    }
+
+    // Returning true keeps the app alive; without it a renderer crash kills the whole process.
+    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+        onRendererGone()
+        return true
+    }
 
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)

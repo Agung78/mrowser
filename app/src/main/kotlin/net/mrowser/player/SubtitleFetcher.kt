@@ -10,16 +10,21 @@ object SubtitleFetcher {
     private const val TIMEOUT_MS = 15_000
 
     /** Returns the body text, or null on any failure (logged, non-fatal — that track is dropped). */
-    fun fetch(url: String, headers: Map<String, String>): String? = try {
-        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = TIMEOUT_MS
-            readTimeout = TIMEOUT_MS
-            instanceFollowRedirects = true
-            headers.forEach { (k, v) -> setRequestProperty(k, v) }
+    fun fetch(url: String, headers: Map<String, String>): String? {
+        repeat(2) { attempt ->
+            try {
+                val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = TIMEOUT_MS
+                    readTimeout = TIMEOUT_MS
+                    instanceFollowRedirects = true
+                    headers.forEach { (k, v) -> setRequestProperty(k, v) }
+                }
+                return conn.inputStream.bufferedReader().use { it.readText() }
+            } catch (e: Exception) {
+                Log.w(TAG, "fetch attempt $attempt failed: $url", e)
+                if (attempt == 0) try { Thread.sleep(1000L) } catch (_: InterruptedException) {}
+            }
         }
-        conn.inputStream.bufferedReader().use { it.readText() }
-    } catch (e: Exception) {
-        Log.w(TAG, "fetch failed: $url", e)
-        null
+        return null
     }
 }

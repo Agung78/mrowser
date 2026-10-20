@@ -83,12 +83,10 @@ class CursorController(
         flushRelease()
         val t = SystemClock.uptimeMillis()
         dispatch(MotionEvent.ACTION_HOVER_MOVE, t, t)
-        dispatch(MotionEvent.ACTION_DOWN, t, t, MotionEvent.BUTTON_PRIMARY)
-        dispatch(MotionEvent.ACTION_BUTTON_PRESS, t, t, MotionEvent.BUTTON_PRIMARY)
+        dispatch(MotionEvent.ACTION_DOWN, t, t)
         val release = Runnable {
             pendingRelease = null
             val r = SystemClock.uptimeMillis()
-            dispatch(MotionEvent.ACTION_BUTTON_RELEASE, t, r)
             dispatch(MotionEvent.ACTION_UP, t, r)
         }
         pendingRelease = release
@@ -140,9 +138,12 @@ class CursorController(
     private fun dispatch(
         action: Int, down: Long, event: Long, buttons: Int = 0, vscroll: Float = 0f
     ) {
+        // Press/release go as a touchscreen tap: this WebView drops mouse-source DOWN/UP
+        // outright (verified on the TCL TV), and `input mouse tap` arrives as touch too.
+        val touch = action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP
         val props = arrayOf(MotionEvent.PointerProperties().apply {
             id = 0
-            toolType = MotionEvent.TOOL_TYPE_MOUSE
+            toolType = if (touch) MotionEvent.TOOL_TYPE_FINGER else MotionEvent.TOOL_TYPE_MOUSE
         })
         val coords = arrayOf(MotionEvent.PointerCoords().apply {
             this.x = this@CursorController.x
@@ -151,9 +152,10 @@ class CursorController(
         })
         val e = MotionEvent.obtain(
             down, event, action, 1, props, coords,
-            0, buttons, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0
+            0, buttons, 1f, 1f, 0, 0,
+            if (touch) InputDevice.SOURCE_TOUCHSCREEN else InputDevice.SOURCE_MOUSE, 0
         )
-        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_UP) {
+        if (touch) {
             webView.dispatchTouchEvent(e)
         } else {
             webView.dispatchGenericMotionEvent(e)

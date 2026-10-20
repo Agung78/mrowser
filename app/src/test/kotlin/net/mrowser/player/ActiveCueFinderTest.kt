@@ -34,4 +34,14 @@ class ActiveCueFinderTest {
     @Test fun `empty cue list yields nothing`() {
         assertEquals(emptyList<SubtitleCue>(), ActiveCueFinder.activeAt(emptyList(), 1000))
     }
+
+    /** Far-future cues must never leak in: the scan short-circuits once a cue starts past timeMs. */
+    @Test fun `a cue starting after timeMs is never active even if it ends after`() {
+        val far = listOf(
+            SubtitleCue(1000, 2000, "A"),
+            SubtitleCue(9000, 10000, "B"),
+            SubtitleCue(9100, 9200, "C"),
+        )
+        assertEquals(listOf("A"), ActiveCueFinder.activeAt(far, 1500).map { it.text })
+    }
 }

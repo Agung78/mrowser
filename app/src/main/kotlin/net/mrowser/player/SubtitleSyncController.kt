@@ -17,6 +17,10 @@ import net.mrowser.stream.SubtitleTrack
  * so this is the only source of cues for [subtitleView]. A ticker re-pushes the cues active
  * at `currentPosition + offsetMs` every [TICK_MS]; offset changes therefore apply instantly.
  * All methods run on the main thread except the per-track fetch+parse, which is offloaded.
+ *
+ * The ticker's render() skips [SubtitleView.setCues] when the active cues didn't change, so a
+ * cue that stays on screen for seconds doesn't force a layout+draw pass on every tick — that
+ * redundant main-thread work is what janked (froze) video on low-power TV hardware.
  */
 @OptIn(UnstableApi::class)
 class SubtitleSyncController(
@@ -31,6 +35,10 @@ class SubtitleSyncController(
     private val inFlight = HashSet<Int>()
     private var selectedIndex = -1
     private var offsetMs = 0L
+    /** Texts of the cues last pushed to [subtitleView]; skips redundant setCues() calls. */
+    private var lastTexts = emptyList<String>()
+    /** Whether [subtitleView] currently shows cues (needed to clear when selection turns off). */
+    private var showing = false
 
     private val ticker = object : Runnable {
         override fun run() {
@@ -95,16 +103,27 @@ class SubtitleSyncController(
 
     private fun render() {
         if (selectedIndex < 0) {
-            subtitleView?.setCues(emptyList())
+            if (showing) {
+                showing = false
+                subtitleView?.setCues(emptyList())
+            }
             return
         }
         val cues = parsedCache[selectedIndex]
         if (cues == null) {
-            subtitleView?.setCues(emptyList())
+            if (showing) {
+                showing = false
+                subtitleView?.setCues(emptyList())
+            }
             return
         }
         val active = ActiveCueFinder.activeAt(cues, player.currentPosition + offsetMs)
-        subtitleView?.setCues(active.map { Cue.Builder().setText(it.text).build() })
+        val texts = active.map { it.text }
+        if (!texts.contentEquals(lastTexts)) {
+            lastTexts = texts.toList()
+            subtitleView?.setCues(active.map { Cue.Builder().setText(it.text).build() })
+            showing = true
+        }
     }
 
     companion object {

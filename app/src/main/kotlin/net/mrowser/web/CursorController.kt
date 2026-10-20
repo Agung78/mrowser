@@ -74,10 +74,9 @@ class CursorController(
     private var pendingRelease: Runnable? = null
 
     /**
-     * A desktop-style left click: hover, press, hold [CLICK_HOLD_MS], release. Sent with
-     * mouse tool/source so Chromium takes it as a mouse (no touch double-tap or fling-stop
-     * heuristics, `pointerType === "mouse"`), and held long enough for pages that
-     * re-render between pointerdown and pointerup.
+     * A click: mouse hover, then a touchscreen press held [CLICK_HOLD_MS] before release —
+     * long enough for pages that re-render between pointerdown and pointerup. The press is
+     * touch because this WebView drops mouse-source DOWN/UP (see [dispatch]).
      */
     fun tap() {
         flushRelease()

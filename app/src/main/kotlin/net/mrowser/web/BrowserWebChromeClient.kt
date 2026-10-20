@@ -26,6 +26,8 @@ class BrowserWebChromeClient(
     private val onExit: () -> Unit,
     private val onTitle: (url: String, title: String) -> Unit = { _, _ -> },
     private val onPopupBlocked: () -> Unit = {},
+    /** Page load progress, 0..100. */
+    private val onProgress: (Int) -> Unit = {},
     /** True when a pop-up's destination is on the block list; see [AdBlocker.isBlockedPopup]. */
     private val isBlockedPopup: (String) -> Boolean = { false },
     /** Hand a non-web URL a pop-up aimed at to the system; see [ExternalSchemePolicy]. */
@@ -37,6 +39,8 @@ class BrowserWebChromeClient(
     private val mainHandler = Handler(Looper.getMainLooper())
 
     val isFullscreen: Boolean get() = customView != null
+
+    override fun onProgressChanged(view: WebView?, newProgress: Int) = onProgress(newProgress)
 
     override fun onReceivedTitle(view: WebView?, title: String?) {
         val url = view?.url ?: return

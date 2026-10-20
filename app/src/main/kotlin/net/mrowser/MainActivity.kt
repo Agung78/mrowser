@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.text.Editable
 import android.text.SpannableString
 import android.text.Spanned
@@ -30,6 +31,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.ProgressBar
 import android.widget.Toast
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -86,6 +88,8 @@ class MainActivity : Activity() {
     private lateinit var sniffer: StreamSniffer
     private lateinit var adBlocker: AdBlocker
     private lateinit var playChip: TextView
+    private lateinit var loadProgress: ProgressBar
+    private var lastBlockedToastAt = 0L
     private lateinit var favoriteButton: ImageButton
     private lateinit var adBlockButton: View
     private lateinit var adBlockIcon: ImageView
@@ -125,6 +129,7 @@ class MainActivity : Activity() {
         webView = findViewById(R.id.webView)
         urlInput = findViewById(R.id.urlInput)
         playChip = findViewById(R.id.playChip)
+        loadProgress = findViewById(R.id.loadProgress)
         homeView = findViewById(R.id.homeView)
         historyView = findViewById(R.id.historyView)
         settingsView = findViewById(R.id.settingsView)
@@ -200,7 +205,7 @@ class MainActivity : Activity() {
                 }
             },
             onExternalScheme = { url -> externalLinks.launch(url) },
-            onNavigationBlocked = { Toast.makeText(this, R.string.navigation_blocked, Toast.LENGTH_SHORT).show() },
+            onNavigationBlocked = { toastBlocked(R.string.navigation_blocked) },
             onMainFrameError = { url -> failedUrl = url },
             onRendererGone = { recoverFromRendererCrash() }
         )
@@ -210,7 +215,11 @@ class MainActivity : Activity() {
             onEnter = { chrome.dismiss(); playChip.visibility = View.GONE; layout.invalidate() },
             onExit = { layout.invalidate() },
             onTitle = { url, title -> recordHistory(url, title) },
-            onPopupBlocked = { Toast.makeText(this, R.string.popup_blocked, Toast.LENGTH_SHORT).show() },
+            onPopupBlocked = { toastBlocked(R.string.popup_blocked) },
+            onProgress = { p ->
+                loadProgress.progress = p
+                loadProgress.visibility = if (p < 100) View.VISIBLE else View.GONE
+            },
             isBlockedPopup = { url -> adBlocker.isBlockedPopup(url) },
             launchExternal = { url -> externalLinks.launch(url) }
         )
@@ -653,6 +662,14 @@ class MainActivity : Activity() {
     }
 
     /** Relaunch onto the same page: the dead WebView can't be reused, and onCreate opens a VIEW intent. */
+    /** A blocked redirect/pop-up Toast, at most one per 3s so a burst of refusals doesn't stack them. */
+    private fun toastBlocked(message: Int) {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastBlockedToastAt < 3000) return
+        lastBlockedToastAt = now
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun recoverFromRendererCrash() {
         val url = webView.url
         (webView.parent as? android.view.ViewGroup)?.removeView(webView)

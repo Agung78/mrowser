@@ -14,6 +14,21 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <!-- Page-load progress: 3dp accent line over the top of the page, under the capsule bar.
+             Never focusable, so it can't take D-pad focus. MainActivity shows it while loading. -->
+        <ProgressBar
+            android:id="@+id/loadProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_gravity="top"
+            android:max="100"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            android:progressTint="@color/accent"
+            android:progressBackgroundTint="@color/transparent"
+            android:visibility="gone" />
+
         <!-- The capsule address bar. Left to right is also the D-pad order; the edge
              controls point their outward next-focus at themselves, so focus cannot leave the
              bar for the WebView / cursor layer behind it. clipToPadding is off so a focused end
